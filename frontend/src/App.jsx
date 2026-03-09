@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useMemo, useState } from 'react'
 import { useCurrentAccount } from '@mysten/dapp-kit'
 import { WalletModal } from './components/WalletModal'
 import { LoginModal } from './components/LoginModal'
@@ -8,77 +8,94 @@ import { Header } from './components/Header'
 import { Stats } from './components/Stats'
 import { Toast } from './components/Toast'
 
+const MOCK_POSTS = [
+  {
+    id: '1',
+    title: 'SUI Deck：把研究、觀點與上鏈敘事整合在同一個前台',
+    content:
+      'SUI Deck BLOG 不是單純的加密部落格，而是把研究筆記、敘事文章與可驗證的鏈上發佈流程整合成同一個產品界面。這代表內容不只可讀，也更接近可以驗證、可以引用、可以持續演進的資產。\n\n第一版先從高質感前端與清楚的產品定位開始，下一步再逐步接上真實的錢包簽章與 Move 合約。',
+    author: 'deck_editor',
+    timestamp: Date.now() - 1000 * 60 * 36,
+    version: 3,
+    blockHeight: 15234567,
+    tag: '產品定位',
+    readTime: '4 分鐘'
+  },
+  {
+    id: '2',
+    title: '為什麼 SUI 適合做內容型產品：速度、物件模型、互動感',
+    content:
+      '大部分內容產品在鏈上都會遇到兩個問題：交易體驗太重，以及資料模型不夠自然。SUI 的物件模型讓內容、作者、版本、互動可以被更細緻地建模，這對「文章版本」、「系列內容」與「內容資產化」非常重要。\n\n這也是 SUI Deck BLOG 想做的方向：不是把 Web2 部落格硬搬上鏈，而是重新思考內容本身該如何被擁有、被追蹤、被轉譯。',
+    author: 'sui_research',
+    timestamp: Date.now() - 1000 * 60 * 60 * 5,
+    version: 2,
+    blockHeight: 15234120,
+    tag: '研究洞察',
+    readTime: '6 分鐘'
+  },
+  {
+    id: '3',
+    title: '內容、Deck、Insight 三條線如何變成同一個品牌體驗',
+    content:
+      '未來的內容站不該只是文章列表。對創作者、投資人與生態參與者來說，更重要的是一個可被快速理解的 knowledge surface：今天發生了什麼、哪些觀點重要、哪些內容值得收藏。\n\nSUI Deck BLOG 的前端要像一個編輯化的產品入口，而不是單純的 feed。這也是這次第一輪改版的重點。',
+    author: 'studio_lead',
+    timestamp: Date.now() - 1000 * 60 * 60 * 22,
+    version: 1,
+    blockHeight: 15233005,
+    tag: '品牌策略',
+    readTime: '5 分鐘'
+  }
+]
+
 function App() {
-  const { account, isConnected } = useCurrentAccount()
+  const account = useCurrentAccount()
+  const isConnected = !!account?.address
   const [showWalletModal, setShowWalletModal] = useState(false)
   const [showLoginModal, setShowLoginModal] = useState(false)
   const [showCreatePost, setShowCreatePost] = useState(false)
-  const [posts, setPosts] = useState([])
-  const [loading, setLoading] = useState(true)
   const [toast, setToast] = useState(null)
-  const [activeTab, setActiveTab] = useState('feed')
+  const [activeTab, setActiveTab] = useState('featured')
+  const [posts, setPosts] = useState(MOCK_POSTS)
 
-  // Mock data for demo (since we can't actually connect to SUI mainnet without proper setup)
-  useEffect(() => {
-    // Simulated posts data
-    const mockPosts = [
-      {
-        id: '1',
-        title: '區塊鏈部落格的未來',
-        content: '區塊鏈技術為我們提供了一個不可篡改的記錄系統。在這個部落格平台上，每一篇發布的文章都會被永久記錄在區塊鏈上，無法被修改或刪除。這種設計確保了內容的真實性和完整性。\n\n想像一下，如果你寫了一篇重要的文章，你可以確保它在未來幾年甚至幾十年後仍然存在，不會因為伺服器關閉或人為因素而消失。',
-        author: 'sui_founder',
-        timestamp: Date.now() - 3600000,
-        version: 3,
-        blockHeight: 15234567
-      },
-      {
-        id: '2',
-        title: 'SUI 區塊鏈簡介',
-        content: 'SUI 是一個高效能的第一層區塊鏈，採用 Move 程式語言編寫智慧合約。它具有以下特點：\n\n1. 高吞吐量 - 每秒可處理數千筆交易\n2. 低延遲 - 交易確認時間極短\n3. 開發者友好 - Move 語言安全且易於使用\n4. 可擴展性 - 支援大規模應用程式',
-        author: 'crypto_dev',
-        timestamp: Date.now() - 7200000,
-        version: 1,
-        blockHeight: 15234500
-      },
-      {
-        id: '3',
-        title: 'Web3 時代的內容創作',
-        content: '在 Web3 時代，內容創作者可以擁有更大的控制權。透過區塊鏈技術，我們可以：\n\n- 確保內容不被審查\n- 直接與讀者互動\n- 透過代幣經濟獲得收益\n- 建立不可篡改的創作記錄\n\n這是一個全新的創作時代！',
-        author: 'web3_creator',
-        timestamp: Date.now() - 86400000,
-        version: 2,
-        blockHeight: 15234000
-      }
-    ]
-    
-    setTimeout(() => {
-      setPosts(mockPosts)
-      setLoading(false)
-    }, 1000)
-  }, [])
+  const featuredPost = posts[0]
+
+  const filteredPosts = useMemo(() => {
+    if (activeTab === 'featured') return posts
+    if (activeTab === 'research') return posts.filter((post) => post.tag === '研究洞察')
+    if (activeTab === 'signals') return posts.filter((post) => post.tag !== '研究洞察')
+    if (activeTab === 'my-posts' && isConnected) {
+      return posts.filter((post) => post.author.includes(account.address.slice(0, 8)))
+    }
+    if (activeTab === 'my-posts' && !isConnected) return []
+    return posts
+  }, [activeTab, posts, isConnected, account])
 
   const showToast = (message, type = 'success') => {
     setToast({ message, type })
-    setTimeout(() => setToast(null), 3000)
+    window.clearTimeout(showToast._timer)
+    showToast._timer = window.setTimeout(() => setToast(null), 2800)
   }
 
   const handleCreatePost = (post) => {
+    const shortAddress = account?.address ? account.address.slice(0, 8) : 'guest'
     const newPost = {
       id: Date.now().toString(),
       ...post,
-      author: account?.address ? `${account.address.slice(0, 8)}...` : 'Anonymous',
+      author: shortAddress,
       timestamp: Date.now(),
       version: 1,
-      blockHeight: 15235000 + Math.floor(Math.random() * 1000)
+      blockHeight: 15235000 + Math.floor(Math.random() * 1000),
+      tag: '創作者投稿',
+      readTime: `${Math.max(2, Math.ceil(post.content.length / 180))} 分鐘`
     }
     setPosts([newPost, ...posts])
     setShowCreatePost(false)
-    showToast('文章發布成功！已記錄在區塊鏈上')
+    showToast('新文章已加入展示 feed，下一步可接真實鏈上交易。')
   }
 
   return (
-    <div className="app">
-      <Header 
+    <div className="app-shell">
+      <Header
         account={account}
         isConnected={isConnected}
         onConnectWallet={() => setShowWalletModal(true)}
@@ -86,74 +103,99 @@ function App() {
         onCreatePost={() => setShowCreatePost(true)}
       />
 
-      <div className="container">
-        <Stats postsCount={posts.length} />
+      <main className="container">
+        <section className="hero card hero-card">
+          <div className="hero-copy">
+            <span className="eyebrow">SUI Deck BLOG</span>
+            <h1>把 SUI 生態觀點、研究筆記與內容資產，做成可展示的編輯化前台。</h1>
+            <p>
+              這不是單純的 Web3 部落格 demo，而是一個結合 <strong>內容、研究、deck 感敘事</strong> 的產品雛形。
+              第一版先完成品牌化前端與互動工作流，下一階段再接上真實的 SUI 錢包與 Move 合約。
+            </p>
+            <div className="hero-actions">
+              <button className="btn btn-primary" onClick={() => setShowCreatePost(true)}>
+                ✍️ 開始寫一篇 Insight
+              </button>
+              <button className="btn btn-secondary" onClick={() => setActiveTab('research')}>
+                🔎 看研究內容
+              </button>
+            </div>
+          </div>
+          <div className="hero-panel">
+            <div className="hero-metric">
+              <span>定位</span>
+              <strong>Editorial × Onchain</strong>
+            </div>
+            <div className="hero-metric">
+              <span>目前階段</span>
+              <strong>Productized Frontend MVP</strong>
+            </div>
+            <div className="hero-metric">
+              <span>下一步</span>
+              <strong>Wallet Sign + Move Publish</strong>
+            </div>
+          </div>
+        </section>
 
-        <div className="tabs">
-          <button 
-            className={`tab ${activeTab === 'feed' ? 'active' : ''}`}
-            onClick={() => setActiveTab('feed')}
-          >
-            📖 動態牆
+        <Stats postsCount={posts.length} usersCount={1280} blocksCount={15235000} />
+
+        <section className="grid-two">
+          <div className="card spotlight-card">
+            <div className="section-head">
+              <span className="section-kicker">Featured Deck</span>
+              <h2>{featuredPost.title}</h2>
+            </div>
+            <p className="spotlight-body">{featuredPost.content.slice(0, 220)}…</p>
+            <div className="spotlight-meta">
+              <span>作者 @{featuredPost.author}</span>
+              <span>{featuredPost.readTime}</span>
+              <span>區塊 #{featuredPost.blockHeight.toLocaleString()}</span>
+            </div>
+          </div>
+
+          <div className="card rail-card">
+            <div className="section-head">
+              <span className="section-kicker">Why it matters</span>
+              <h2>這一版先把產品感做對</h2>
+            </div>
+            <ul className="bullet-list">
+              <li>收斂成 SUI-focused insight / deck / blog destination</li>
+              <li>保留現有 React 架構，不做重型重寫</li>
+              <li>用 demo data 呈現未來鏈上內容產品的形狀</li>
+              <li>下一階段再接真實 wallet、author profile、publish flow</li>
+            </ul>
+          </div>
+        </section>
+
+        <div className="tabs product-tabs">
+          <button className={`tab ${activeTab === 'featured' ? 'active' : ''}`} onClick={() => setActiveTab('featured')}>
+            主編精選
           </button>
-          <button 
-            className={`tab ${activeTab === 'explore' ? 'active' : ''}`}
-            onClick={() => setActiveTab('explore')}
-          >
-            🔍 探索
+          <button className={`tab ${activeTab === 'research' ? 'active' : ''}`} onClick={() => setActiveTab('research')}>
+            研究洞察
           </button>
-          <button 
-            className={`tab ${activeTab === 'my-posts' ? 'active' : ''}`}
-            onClick={() => setActiveTab('my-posts')}
-          >
-            📝 我的文章
+          <button className={`tab ${activeTab === 'signals' ? 'active' : ''}`} onClick={() => setActiveTab('signals')}>
+            敘事 Signals
+          </button>
+          <button className={`tab ${activeTab === 'my-posts' ? 'active' : ''}`} onClick={() => setActiveTab('my-posts')}>
+            我的內容
           </button>
         </div>
 
-        {loading ? (
-          <div className="loading">
-            <div className="spinner"></div>
-          </div>
-        ) : posts.length === 0 ? (
-          <div className="empty-state">
-            <div className="empty-icon">📝</div>
-            <h3>還沒有文章</h3>
-            <p>成為第一個發布文章的人吧！</p>
-            {isConnected && (
-              <button 
-                className="btn btn-primary" 
-                style={{ marginTop: '16px' }}
-                onClick={() => setShowCreatePost(true)}
-              >
-                發布文章
-              </button>
-            )}
+        {!filteredPosts.length ? (
+          <div className="empty-state card">
+            <div className="empty-icon">🪪</div>
+            <h3>{isConnected ? '你還沒有內容' : '先連接錢包查看個人內容'}</h3>
+            <p>{isConnected ? '建立第一篇文章，測試這個前端工作流。' : '目前「我的內容」需要先接上錢包地址與鏈上身份。'}</p>
           </div>
         ) : (
-          posts.map(post => (
-            <PostCard key={post.id} post={post} />
-          ))
+          filteredPosts.map((post) => <PostCard key={post.id} post={post} />)
         )}
-      </div>
+      </main>
 
-      {showWalletModal && (
-        <WalletModal onClose={() => setShowWalletModal(false)} />
-      )}
-
-      {showLoginModal && (
-        <LoginModal 
-          onClose={() => setShowLoginModal(false)} 
-          onSuccess={() => showToast('登入成功！')}
-        />
-      )}
-
-      {showCreatePost && (
-        <CreatePostModal 
-          onClose={() => setShowCreatePost(false)}
-          onSubmit={handleCreatePost}
-        />
-      )}
-
+      {showWalletModal && <WalletModal onClose={() => setShowWalletModal(false)} />}
+      {showLoginModal && <LoginModal onClose={() => setShowLoginModal(false)} onSuccess={() => showToast('登入流程已完成（目前為 demo 模式）。')} />}
+      {showCreatePost && <CreatePostModal onClose={() => setShowCreatePost(false)} onSubmit={handleCreatePost} />}
       {toast && <Toast message={toast.message} type={toast.type} />}
     </div>
   )

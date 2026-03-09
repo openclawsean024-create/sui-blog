@@ -6,14 +6,14 @@ import App from './App'
 import './index.css'
 
 const queryClient = new QueryClient()
-
-// SUI Mainnet RPC
-const SUI_NETWORK = 'https://fullnode.mainnet.sui.io'
+const networks = {
+  mainnet: { url: 'https://fullnode.mainnet.sui.io' }
+}
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
-      <SuiClientProvider networks={{ mainnet: SUI_NETWORK }}>
+      <SuiClientProvider networks={networks} defaultNetwork="mainnet">
         <WalletProvider autoConnect>
           <App />
         </WalletProvider>

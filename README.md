@@ -1,132 +1,104 @@
-# SUI 區塊鏈部落格系統
+# SUI Deck BLOG
 
-一個使用 SUI 區塊鏈技術的不可篡改部落格平台。
+SUI Deck BLOG 是一個以 **SUI 生態內容、研究洞察與 deck 式敘事** 為核心的前端產品雛形。
 
-## 功能特色
+這個 repo 目前不是完整上鏈產品，而是分成兩層：
 
-### 🔐 帳號系統
-- 用戶名 + 密碼註冊
-- 密碼雜湊儲存（區塊鏈安全）
-- 每個帳號自動生成 SUI 錢包地址
+- `frontend/`：React + Vite 的產品前端
+- `sui-contracts/`：Move 智慧合約雛形
 
-### 💰 錢包整合
-- 支援 SUI Wallet
-- 顯示錢包餘額
-- 區塊鏈原生支付
+目前這一版重點不是深度區塊鏈交互，而是先把站點收斂成一個**可展示、可延續開發、產品定位清楚**的內容入口。
 
-### 📝 發文系統
-- **不可篡改**：文章一旦發布，無法修改或刪除
-- **版本追蹤**：更新需發布新文章（新區塊 = 新版本）
-- **永久儲存**：所有資料記錄在 SUI 區塊鏈上
+---
 
-### ⛓️ 區塊鏈特性
-- 去中心化儲存
-- 不可篡改
-- 透明可驗證
-- 低交易費用
+## 目前已實作
 
-## 技術架構
+### Frontend（已產品化第一輪）
+- 高質感首頁 / 內容工作台介面
+- 清楚的產品定位：SUI-focused blog / deck / insights destination
+- 精選內容卡、研究內容、signals 分頁
+- 錢包連接 / 登入 / 發文 modal（目前為 demo workflow）
+- 模擬鏈上文章 feed
+- 更合理的 `@mysten/dapp-kit` provider 設定
 
+### Smart Contract（雛形）
+- `sui-contracts/sources/blog.move`
+- 目前作為資料模型與未來上鏈流程的基礎
+
+---
+
+## 目前限制
+
+這個版本仍然是 **產品化前端 MVP**，尚未完成：
+
+- 真實錢包簽章與 publish 交易
+- 真正從鏈上讀取文章
+- 真正的帳號系統與權限
+- 真正的文章版本關聯 / 查詢
+- production-ready deploy pipeline
+
+也就是說：
+**現在可 demo 產品方向與 UI / UX，但還不是完整可商用鏈上內容平台。**
+
+---
+
+## 技術結構
+
+```text
+frontend/
+  React + Vite
+  @mysten/dapp-kit
+  UI components
+
+sui-contracts/
+  Move contract prototype
 ```
-┌─────────────────────────────────────────┐
-│         Frontend (React + Vite)         │
-│  - @mysten/dapp-kit                     │
-│  - SUI Wallet Adapter                   │
-└────────────────┬────────────────────────┘
-                 │
-                 ▼
-┌─────────────────────────────────────────┐
-│         SUI Move Smart Contract         │
-│  - User Profile (用戶資料)               │
-│  - Blog Post (文章)                     │
-│  - Global State (全局狀態)               │
-└─────────────────────────────────────────┘
-```
 
-## 安裝與運行
+---
 
-### 前端
+## 本地開發
 
+### Frontend
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
 
-訪問 http://localhost:3000
+### Build
+```bash
+cd frontend
+npm run build
+```
 
-### 智慧合約
-
+### Move Contract
 ```bash
 cd sui-contracts
 sui move build
-sui client publish
 ```
 
-## 智慧合約結構
+---
 
-### 資料結構
+## 下一步建議
 
-```move
-// 用戶資料
-struct UserProfile {
-    id: UID,
-    username: String,
-    password_hash: String,
-    wallet_address: address,
-    created_at: u64,
-    post_count: u64
-}
+### Phase 2
+1. 接上真實 SUI wallet connect flow
+2. 修正 / 完成 publish transaction 流程
+3. 鏈上讀取文章與作者資料
+4. 補齊 profile / post detail / author pages
+5. 決定主打方向：
+   - Onchain blog
+   - Research publication hub
+   - Deck / insight distribution layer
 
-// 文章 (不可變)
-struct BlogPost {
-    id: UID,
-    post_id: u64,
-    author: address,
-    author_username: String,
-    title: String,
-    content: String,
-    timestamp: u64,
-    block_height: u64,
-    version: u64,
-    previous_post_id: Option<ID>
-}
-```
+### Phase 3
+1. 真正部署合約
+2. 加入內容索引 / 搜尋
+3. 加入收藏、追蹤、閱讀體驗優化
+4. 規劃內容與品牌營運節奏
 
-### 核心函數
+---
 
-- `register_user()` - 註冊新用戶
-- `create_post()` - 發布文章
-- `get_all_posts()` - 獲取所有文章
-- `get_address_by_username()` - 查詢用戶地址
-- `get_stats()` - 獲取統計數據
+## 定位一句話
 
-## 設計原則
-
-### 為什麼文章不能修改？
-
-區塊鏈的核心價值之一是**不可篡改**。一旦資料上鏈，就無法修改。這保證了：
-
-1. **言論自由**：沒有審查風險
-2. **資料真實**：無法偽造或篡改歷史
-3. **永久記錄**：資料永遠存在
-
-### 如何「修改」文章？
-
-在傳統系統中，你會「編輯」文章。
-在區塊鏈系統中，你應該**發布新文章**。
-
-每次發布新文章都會：
-- 創建新的區塊記錄
-- 增加版本號
-- 保留歷史版本
-
-這就是所謂的「追加型」資料儲存！
-
-## 開發者
-
-- Sean Li - 初始開發
-
-## 授權
-
-MIT License
+**SUI Deck BLOG = 把 SUI 生態內容、研究與敘事，做成更像產品而不是單純 demo 的前端入口。**
