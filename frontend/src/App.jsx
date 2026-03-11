@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   useCurrentAccount,
   useDisconnectWallet,
@@ -20,6 +20,8 @@ import { PostCard } from './components/PostCard'
 import { Header } from './components/Header'
 import { Stats } from './components/Stats'
 import { Toast } from './components/Toast'
+
+const STORAGE_KEY = 'sui-blog-app-state-v1'
 
 const MOCK_POSTS = [
   {
@@ -62,6 +64,14 @@ const MOCK_POSTS = [
     publishStatus: 'published-demo',
   },
 ]
+
+function loadPersistedState() {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}')
+  } catch {
+    return {}
+  }
+}
 
 function HomeView({
   posts,
@@ -222,16 +232,21 @@ function AppShell() {
   const isConnected = !!account?.address
   const { mutate: disconnectWallet } = useDisconnectWallet()
   const { mutateAsync: signPersonalMessage } = useSignPersonalMessage()
+  const persistedState = loadPersistedState()
   const [showWalletModal, setShowWalletModal] = useState(false)
   const [showLoginModal, setShowLoginModal] = useState(false)
   const [showCreatePost, setShowCreatePost] = useState(false)
   const [showWithdrawModal, setShowWithdrawModal] = useState(false)
   const [toast, setToast] = useState(null)
-  const [activeTab, setActiveTab] = useState('featured')
-  const [posts, setPosts] = useState(MOCK_POSTS)
-  const [userProfile, setUserProfile] = useState({ username: '', password: '', boundWallet: '' })
+  const [activeTab, setActiveTab] = useState(persistedState.activeTab || 'featured')
+  const [posts, setPosts] = useState(persistedState.posts?.length ? persistedState.posts : MOCK_POSTS)
+  const [userProfile, setUserProfile] = useState(persistedState.userProfile || { username: '', password: '', boundWallet: '' })
   const navigate = useNavigate()
   const location = useLocation()
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ posts, userProfile, activeTab }))
+  }, [posts, userProfile, activeTab])
 
   const showToast = (message, type = 'success') => {
     setToast({ message, type })
@@ -240,7 +255,7 @@ function AppShell() {
   }
 
   const handleCreatePost = (post) => {
-    const shortAddress = account?.address ? account.address.slice(0, 8) : 'guest'
+    const shortAddress = account?.address ? account.address.slice(0, 8) : userProfile.username || 'guest'
     const newPost = {
       id: Date.now().toString(),
       ...post,
