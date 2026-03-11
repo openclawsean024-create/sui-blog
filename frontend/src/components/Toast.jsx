@@ -1,7 +1,7 @@
 export function Toast({ message, type = 'success' }) {
   return (
     <div className={`toast ${type}`}>
-      {type === 'success' ? '✅' : '❌'} {message}
+      {type === 'success' ? '✓' : '⚠'} {message}
     </div>
   )
 }

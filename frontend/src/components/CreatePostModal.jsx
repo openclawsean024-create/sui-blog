@@ -4,23 +4,32 @@ export function CreatePostModal({ onClose, onSubmit }) {
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
   const [loading, setLoading] = useState(false)
+  const [step, setStep] = useState('editing')
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
+    setStep('signing')
+    await new Promise((resolve) => setTimeout(resolve, 900))
+    setStep('publishing')
+    await new Promise((resolve) => setTimeout(resolve, 1200))
 
-    // Simulate blockchain transaction
-    await new Promise(resolve => setTimeout(resolve, 2000))
-
-    onSubmit({ title, content })
+    onSubmit({ title, content, publishStatus: 'published-demo' })
     setLoading(false)
+    setStep('editing')
   }
+
+  const stepLabel = {
+    editing: '準備發佈',
+    signing: '模擬簽章中',
+    publishing: '模擬發佈中'
+  }[step]
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal" onClick={e => e.stopPropagation()}>
+      <div className="modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h2 className="modal-title">✍️ 發布文章</h2>
+          <h2 className="modal-title">撰寫新文章</h2>
           <button className="modal-close" onClick={onClose}>×</button>
         </div>
 
@@ -32,7 +41,7 @@ export function CreatePostModal({ onClose, onSubmit }) {
               className="form-input"
               placeholder="輸入文章標題"
               value={title}
-              onChange={e => setTitle(e.target.value)}
+              onChange={(e) => setTitle(e.target.value)}
               required
               maxLength={100}
             />
@@ -44,49 +53,36 @@ export function CreatePostModal({ onClose, onSubmit }) {
               className="form-textarea"
               placeholder="輸入文章內容..."
               value={content}
-              onChange={e => setContent(e.target.value)}
+              onChange={(e) => setContent(e.target.value)}
               required
               minLength={10}
             />
-            <div style={{ 
-              textAlign: 'right', 
-              fontSize: '12px', 
-              color: 'var(--text-muted)',
-              marginTop: '4px'
-            }}>
-              {content.length} 字
-            </div>
+            <div className="form-counter">{content.length} 字</div>
           </div>
 
-          <div style={{ 
-            padding: '16px', 
-            background: 'rgba(111, 179, 233, 0.1)', 
-            borderRadius: '12px',
-            marginBottom: '20px',
-            fontSize: '13px',
-            color: 'var(--primary)'
-          }}>
-            <p>⚠️ 重要提醒：</p>
-            <ul style={{ marginTop: '8px', paddingLeft: '20px' }}>
-              <li>文章發布後將<strong>無法修改或刪除</strong></li>
-              <li>如需更新，請<strong>發布新文章</strong></li>
-              <li>所有內容將<strong>永久記錄</strong>在區塊鏈上</li>
+          <div className="publish-box">
+            <p className="publish-title">發佈流程 demo</p>
+            <ul>
+              <li>建立內容草稿</li>
+              <li>模擬錢包簽章</li>
+              <li>模擬送出 publish transaction</li>
             </ul>
+            <div className="publish-step">目前狀態：{stepLabel}</div>
           </div>
 
-          <button 
-            type="submit" 
-            className="btn btn-primary" 
+          <button
+            type="submit"
+            className="btn btn-primary"
             style={{ width: '100%' }}
             disabled={loading || !title || !content}
           >
             {loading ? (
               <span>
                 <span className="spinner" style={{ width: '16px', height: '16px' }}></span>
-                {' '}正在上鏈中...
+                {' '}處理中...
               </span>
             ) : (
-              '⛓️ 發布到區塊鏈'
+              '模擬發佈文章'
             )}
           </button>
         </form>

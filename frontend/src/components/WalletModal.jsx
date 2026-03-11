@@ -1,86 +1,72 @@
-import { useState } from 'react'
-import { useCurrentAccount, useAccounts } from '@mysten/dapp-kit'
+import { useMemo, useState } from 'react'
+import { useConnectWallet, useWallets } from '@mysten/dapp-kit'
 
-export function WalletModal({ onClose }) {
-  const [connecting, setConnecting] = useState(false)
-  
-  // Demo wallet list (since dapp-kit might not have wallets available)
-  const demoWallets = [
-    { name: 'Sui Wallet', icon: '💳' },
-    { name: 'Ethos Wallet', icon: '🔐' },
-    { name: 'WalletConnect', icon: '🔗' }
-  ]
+export function WalletModal({ onClose, onConnected, onError }) {
+  const wallets = useWallets()
+  const { mutateAsync: connectWallet } = useConnectWallet()
+  const [connecting, setConnecting] = useState('')
 
-  const handleConnect = async (walletName) => {
-    setConnecting(walletName)
+  const availableWallets = useMemo(() => {
+    return wallets.map((wallet) => ({
+      name: wallet.name,
+      icon: wallet.icon,
+      wallet,
+    }))
+  }, [wallets])
+
+  const handleConnect = async (wallet) => {
+    setConnecting(wallet.name)
     try {
-      // Simulate wallet connection
-      await new Promise(resolve => setTimeout(resolve, 1500))
+      await connectWallet({ wallet })
+      onConnected?.(wallet.name)
       onClose()
     } catch (error) {
-      console.error('Failed to connect:', error)
-      setConnecting(false)
+      console.error('Failed to connect wallet:', error)
+      onError?.(error)
+      setConnecting('')
     }
   }
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal" onClick={e => e.stopPropagation()}>
+      <div className="modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h2 className="modal-title">🔗 連接錢包</h2>
+          <h2 className="modal-title">連接 SUI 錢包</h2>
           <button className="modal-close" onClick={onClose}>×</button>
         </div>
-        
-        <p style={{ color: 'var(--text-muted)', marginBottom: '20px' }}>
-          選擇一個 SUI 錢包來連接到區塊鏈部落格
+
+        <p className="modal-copy">
+          選擇一個已安裝的 SUI 錢包來連線。這一版已改成 dapp-kit 真實連線流程，成功後會顯示真實 wallet address。
         </p>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          {demoWallets.map(wallet => (
-            <button
-              key={wallet.name}
-              className="btn btn-secondary"
-              onClick={() => handleConnect(wallet.name)}
-              disabled={connecting}
-              style={{ 
-                justifyContent: 'flex-start', 
-                padding: '16px',
-                opacity: connecting === wallet.name ? 0.7 : 1
-              }}
-            >
-              <span style={{ fontSize: '24px', marginRight: '12px' }}>
-                {wallet.icon}
-              </span>
-              <span>{wallet.name}</span>
-              {connecting === wallet.name && (
-                <span style={{ marginLeft: 'auto' }}>
-                  <span className="spinner" style={{ width: '20px', height: '20px' }}></span>
+        {availableWallets.length ? (
+          <div className="wallet-list">
+            {availableWallets.map(({ name, icon, wallet }) => (
+              <button
+                key={name}
+                className="wallet-option"
+                onClick={() => handleConnect(wallet)}
+                disabled={Boolean(connecting)}
+              >
+                <span className="wallet-icon">
+                  {icon ? <img src={icon} alt={name} className="wallet-icon-img" /> : '◈'}
                 </span>
-              )}
-            </button>
-          ))}
-        </div>
-
-        <div style={{ 
-          marginTop: '24px', 
-          padding: '16px', 
-          background: 'var(--bg)', 
-          borderRadius: '12px',
-          fontSize: '14px',
-          color: 'var(--text-muted)'
-        }}>
-          <p>💡 沒有錢包？</p>
-          <p style={{ marginTop: '8px' }}>
-            <a 
-              href="https://sui.io/wallet" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              style={{ color: 'var(--primary)' }}
-            >
-              下載 Sui Wallet →
+                <span className="wallet-copy">
+                  <strong>{name}</strong>
+                  <small>已安裝，可直接發起連線</small>
+                </span>
+                {connecting === name && <span className="spinner" style={{ width: '20px', height: '20px' }}></span>}
+              </button>
+            ))}
+          </div>
+        ) : (
+          <div className="helper-box">
+            <p>目前沒有偵測到可用的 SUI 錢包。</p>
+            <a href="https://sui.io/wallet" target="_blank" rel="noopener noreferrer">
+              前往 Sui Wallet 下載頁
             </a>
-          </p>
-        </div>
+          </div>
+        )}
       </div>
     </div>
   )
