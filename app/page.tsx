@@ -127,7 +127,7 @@ export default function Home() {
           <div className="section-label">All Posts</div>
           <h2 className="section-heading">Latest from <span style={{color: 'var(--sui-accent)'}}>the Blog</span></h2>
           <div className="posts-grid">
-            {posts.slice(1).map((post) => (
+            {(posts ?? []).slice(1).map((post) => (
               <article key={post.title} className="post-card">
                 <img src={post.image} alt={post.title} className="post-image" />
                 <div className="post-body">
