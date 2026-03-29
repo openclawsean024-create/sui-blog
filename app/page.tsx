@@ -107,6 +107,7 @@ export default function Home() {
       <section className="featured-section">
         <div className="section-container">
           <div className="section-label">Featured</div>
+          {posts && posts[0] && (
           <div className="featured-post">
             <img src={posts[0].image} alt={posts[0].title} className="featured-post-img" />
             <div className="featured-post-body">
@@ -116,6 +117,7 @@ export default function Home() {
               <div className="featured-post-meta">{posts[0].date}</div>
             </div>
           </div>
+          )}
         </div>
       </section>
 
