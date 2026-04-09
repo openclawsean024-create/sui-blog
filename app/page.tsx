@@ -1,4 +1,5 @@
 // Sui Blog Landing Page
+'use client';
 // Spec: https://www.notion.so/Sui-Landing-Page-33d449ca65d8814bb9dcc26958aeb2b5
 // Built on: Next.js + Vercel
 
