@@ -17,8 +17,7 @@ const ibmPlexMono = IBM_Plex_Mono({
 
 export const metadata: Metadata = {
   title: "Sui Blog — Web3 Stories on Sui",
-  description: "A secure, open-source blog for the Sui blockchain ecosystem. Where Web3 stories come to life.",
-  keywords: ["Sui", "Sui blockchain", "Move language", "Web3", "dApp", "Sui ecosystem"],
+  description: "A developer-focused blog exploring the Sui blockchain ecosystem. Deep dives into Move language, dApp development, and scalable Web3.",
   openGraph: {
     title: "Sui Blog — Web3 Stories on Sui",
     description: "A secure, open-source blog for the Sui blockchain ecosystem.",
