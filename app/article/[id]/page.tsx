@@ -1,6 +1,5 @@
 'use client';
 
-import { use } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
@@ -8,9 +7,9 @@ import remarkGfm from 'remark-gfm';
 import { DEMO_POSTS } from '@/types';
 import { ArrowLeft, ExternalLink, Hash } from 'lucide-react';
 
-export default function ArticlePage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
+export default function ArticlePage({ params }: { params: { id: string } }) {
   const router = useRouter();
+  const { id } = params;
   const post = DEMO_POSTS.find(p => p.id === id);
 
   if (!post) {

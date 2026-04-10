@@ -1,12 +1,11 @@
 'use client';
 
-import { use } from 'react';
 import Link from 'next/link';
 import { DEMO_POSTS } from '@/types';
 import { ArrowLeft, Wallet } from 'lucide-react';
 
-export default function AuthorPage({ params }: { params: Promise<{ address: string }> }) {
-  const { address } = use(params);
+export default function AuthorPage({ params }: { params: { address: string } }) {
+  const { address } = params;
   const posts = DEMO_POSTS.filter(p => p.author.toLowerCase() === address.toLowerCase());
 
   function truncate(addr: string) {
