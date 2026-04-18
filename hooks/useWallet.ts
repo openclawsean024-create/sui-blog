@@ -1,7 +1,11 @@
 'use client';
+import { useCurrentAccount, useCurrentWallet, useDisconnectWallet, useConnectWallet } from '@mysten/dapp-kit';
 import { useState, useCallback } from 'react';
 
 export type WalletStatus = 'disconnected' | 'connecting' | 'connected' | 'failed';
+
+// Re-export the types from dapp-kit for convenience
+export type { WalletStatus as WalletKitStatus };
 
 export interface WalletState {
   status: WalletStatus;
@@ -9,42 +13,52 @@ export interface WalletState {
   error: string | null;
 }
 
+// Thin wrapper that maps @mysten/dapp-kit hooks to the existing WalletState interface
 export function useWallet() {
-  const [state, setState] = useState<WalletState>({
-    status: 'disconnected',
-    address: null,
-    error: null,
-  });
+  const { connectionStatus, currentWallet } = useCurrentWallet();
+  const { mutateAsync: connect } = useConnectWallet();
+  const { mutateAsync: disconnect } = useDisconnectWallet();
+  const currentAccount = useCurrentAccount();
+  const [connectError, setConnectError] = useState<string | null>(null);
 
-  const connect = useCallback(async () => {
-    setState({ status: 'connecting', address: null, error: null });
+  // Map dapp-kit connection status to our WalletStatus
+  let status: WalletStatus = 'disconnected';
+  if (connectionStatus === 'connecting') {
+    status = 'connecting';
+  } else if (connectionStatus === 'connected' && currentAccount) {
+    status = 'connected';
+  } else if (connectionStatus === 'disconnected') {
+    status = 'disconnected';
+  }
 
-    // Simulate wallet connection with timeout
-    await new Promise(res => setTimeout(res, 1500));
+  const address = currentAccount?.address ?? null;
 
-    // In production, this would call Sui wallet adapter
-    // For demo, randomly succeed (80%) or fail (20%)
-    const shouldSucceed = Math.random() > 0.2;
-
-    if (shouldSucceed) {
-      const mockAddress = '0x' + Array.from({ length: 40 }, () =>
-        Math.floor(Math.random() * 16).toString(16)
-      ).join('');
-      setState({ status: 'connected', address: mockAddress, error: null });
-      return { success: true, address: mockAddress };
-    } else {
-      setState({ status: 'failed', address: null, error: 'Connection failed. Please try again.' });
-      // Auto-reset to disconnected after 3s
-      setTimeout(() => {
-        setState({ status: 'disconnected', address: null, error: null });
-      }, 3000);
-      return { success: false, error: 'Connection failed. Please try again.' };
+  const handleConnect = useCallback(async () => {
+    setConnectError(null);
+    if (!currentWallet) {
+      setConnectError('No wallet detected. Please install Petra, Martian, or Sui Wallet extension.');
+      return { success: false, error: 'No wallet detected.' };
     }
-  }, []);
+    try {
+      await connect({ wallet: currentWallet });
+      return { success: true, address };
+    } catch (err: any) {
+      const msg = err?.message || 'Connection failed. Please try again.';
+      setConnectError(msg);
+      return { success: false, error: msg };
+    }
+  }, [currentWallet, connect, address]);
 
-  const disconnect = useCallback(() => {
-    setState({ status: 'disconnected', address: null, error: null });
-  }, []);
+  const handleDisconnect = useCallback(() => {
+    disconnect();
+    setConnectError(null);
+  }, [disconnect]);
 
-  return { ...state, connect, disconnect };
+  return {
+    status,
+    address,
+    error: connectError,
+    connect: handleConnect,
+    disconnect: handleDisconnect,
+  };
 }

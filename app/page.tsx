@@ -1,8 +1,9 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 import { Loader2, X, Wallet, ExternalLink, Copy, LogOut, ChevronDown, Menu, Info } from 'lucide-react';
+import { ConnectButton } from '@mysten/dapp-kit';
+import { useCurrentAccount, useDisconnectWallet } from '@mysten/dapp-kit';
 import { posts, getPostById, formatAddress } from '../lib/posts';
-import { useWallet } from '../hooks/useWallet';
 import { useToast } from '../hooks/useToast';
 
 // ── Toast Component ──────────────────────────────────────────────────────────
@@ -22,9 +23,11 @@ function ToastContainer({ toasts, removeToast }: { toasts: any[]; removeToast: (
 }
 
 // ── Wallet Button ───────────────────────────────────────────────────────────
-function WalletButton({ wallet, addToast }: { wallet: ReturnType<typeof useWallet>; addToast: any }) {
+function WalletButton({ addToast }: { addToast: any }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const currentAccount = useCurrentAccount();
+  const { mutate: disconnect } = useDisconnectWallet();
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -36,70 +39,32 @@ function WalletButton({ wallet, addToast }: { wallet: ReturnType<typeof useWalle
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 
-  async function handleClick() {
-    if (wallet.status === 'connected') { setMenuOpen(!menuOpen); return; }
-    const result = await wallet.connect();
-    if (result.success) {
-      addToast('success', `Wallet connected: ${formatAddress(result.address!)}`, 3000);
-    } else {
-      addToast('error', result.error || 'Connection failed. Please try again.', 5000);
-    }
-  }
-
   function handleCopy() {
-    if (wallet.address) {
-      navigator.clipboard.writeText(wallet.address);
+    if (currentAccount?.address) {
+      navigator.clipboard.writeText(currentAccount.address);
       addToast('info', 'Address copied to clipboard', 2000);
       setMenuOpen(false);
     }
   }
 
   function handleDisconnect() {
-    wallet.disconnect();
+    disconnect();
     setMenuOpen(false);
     addToast('info', 'Wallet disconnected', 2000);
   }
 
-  const btnClass = wallet.status === 'connected'
-    ? 'wallet-btn wallet-btn-connected'
-    : wallet.status === 'connecting'
-    ? 'wallet-btn wallet-btn-connecting'
-    : wallet.status === 'failed'
-    ? 'wallet-btn wallet-btn-failed'
-    : 'wallet-btn wallet-btn-disconnected';
-
-  const label = wallet.status === 'connected'
-    ? formatAddress(wallet.address!)
-    : wallet.status === 'connecting'
-    ? 'Connecting...'
-    : wallet.status === 'failed'
-    ? 'Retry Connection'
-    : 'Connect Wallet';
-
-  return (
-    <div className="wallet-dropdown" ref={menuRef}>
-      <button
-        className={btnClass}
-        onClick={handleClick}
-        disabled={wallet.status === 'connecting'}
-        aria-label={
-          wallet.status === 'connected'
-            ? `Wallet connected. Address: ${formatAddress(wallet.address!)}. Press Enter for options.`
-            : wallet.status === 'connecting'
-            ? 'Connecting wallet...'
-            : 'Connect wallet'
-        }
-      >
-        {wallet.status === 'connecting' ? (
-          <><Loader2 size={14} className="spin" /> {label}</>
-        ) : wallet.status === 'connected' ? (
-          <><span className="wallet-dot" />{label} <ChevronDown size={12} /></>
-        ) : (
-          <><Wallet size={14} /> {label}</>
-        )}
-      </button>
-
-      {wallet.status === 'connected' && (
+  // Wallet is connected — show dropdown
+  if (currentAccount) {
+    const address = currentAccount.address;
+    return (
+      <div className="wallet-dropdown" ref={menuRef}>
+        <button
+          className="wallet-btn wallet-btn-connected"
+          onClick={() => setMenuOpen(!menuOpen)}
+          aria-label={`Wallet connected. Address: ${formatAddress(address)}. Press Enter for options.`}
+        >
+          <span className="wallet-dot" />{formatAddress(address)} <ChevronDown size={12} />
+        </button>
         <div className={`wallet-dropdown-menu ${menuOpen ? 'open' : ''}`} role="menu">
           <div style={{ padding: '8px 10px 4px', fontSize: '0.7rem', color: 'var(--text-muted)', fontFamily: 'JetBrains Mono, monospace' }}>
             Connected Wallet
@@ -109,7 +74,7 @@ function WalletButton({ wallet, addToast }: { wallet: ReturnType<typeof useWalle
           </button>
           <button
             className="wallet-dropdown-item"
-            onClick={() => { window.open(`https://suivision.xyz/account/${wallet.address}`, '_blank'); setMenuOpen(false); }}
+            onClick={() => { window.open(`https://suivision.xyz/account/${address}`, '_blank'); setMenuOpen(false); }}
             role="menuitem"
           >
             <ExternalLink size={13} /> View on Explorer
@@ -119,17 +84,28 @@ function WalletButton({ wallet, addToast }: { wallet: ReturnType<typeof useWalle
             <LogOut size={13} /> Disconnect
           </button>
         </div>
-      )}
+      </div>
+    );
+  }
+
+  // Wallet not connected — show dapp-kit ConnectButton
+  return (
+    <div className="wallet-dropdown">
+      <ConnectButton
+        connectText={<><Wallet size={14} /> Connect Wallet</>}
+      />
     </div>
   );
 }
 
 // ── Navbar ─────────────────────────────────────────────────────────────────
-function Navbar({ activePage, setActivePage }: { activePage: string; setActivePage: (p: string) => void }) {
+function Navbar({ activePage, setActivePage, addToast }: {
+  activePage: string;
+  setActivePage: (p: string) => void;
+  addToast: any;
+}) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { wallet } = { wallet: useWallet() };
-  const { addToast } = { addToast: useToast().addToast };
 
   useEffect(() => {
     function onScroll() { setScrolled(window.scrollY > 100); }
@@ -176,13 +152,7 @@ function Navbar({ activePage, setActivePage }: { activePage: string; setActivePa
           </div>
 
           <div className="navbar-right">
-            <button
-              className="btn-secondary"
-              onClick={() => setActivePage('write')}
-              style={{ display: 'none' }}
-              aria-label="Write new article"
-            >Write</button>
-            <WalletButton wallet={useWallet()} addToast={useToast().addToast} />
+            <WalletButton addToast={addToast} />
             <button
               className="mobile-menu-btn"
               onClick={() => setMobileOpen(true)}
@@ -350,7 +320,6 @@ function PostsPage({ setActivePage, setArticleId }: { setActivePage: (p: string)
 
 // ── Article Page ───────────────────────────────────────────────────────────
 function renderMarkdown(content: string): string {
-  // Simple markdown renderer → HTML-like structure (safe for React dangerouslySetInnerHTML)
   return content
     .replace(/^## (.+)$/gm, '<h2>$1</h2>')
     .replace(/^### (.+)$/gm, '<h3>$1</h3>')
@@ -360,8 +329,7 @@ function renderMarkdown(content: string): string {
       const cells = m.split('|').filter(c => c.trim());
       const isHeader = cells.some(c => c.trim().match(/^[-:]+$/));
       if (isHeader) return '';
-      const tag = 'td';
-      return '<tr>' + cells.map(c => `<${tag}>${c.trim()}</${tag}>`).join('') + '</tr>';
+      return '<tr>' + cells.map(c => `<td>${c.trim()}</td>`).join('') + '</tr>';
     })
     .replace(/(<tr>[\s\S]+?<\/tr>)+/g, '<table>$&</table>')
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
@@ -524,8 +492,7 @@ function AboutPage() {
 }
 
 // ── Write Page ─────────────────────────────────────────────────────────────
-function WritePage({ wallet, addToast, setActivePage }: {
-  wallet: ReturnType<typeof useWallet>;
+function WritePage({ addToast, setActivePage }: {
   addToast: any;
   setActivePage: (p: string) => void;
 }) {
@@ -533,8 +500,9 @@ function WritePage({ wallet, addToast, setActivePage }: {
   const [category, setCategory] = useState('Development');
   const [content, setContent] = useState('');
   const [publishing, setPublishing] = useState(false);
+  const currentAccount = useCurrentAccount();
 
-  if (wallet.status !== 'connected') {
+  if (!currentAccount) {
     return (
       <div className="write-page">
         <div className="write-inner">
@@ -625,7 +593,7 @@ function WritePage({ wallet, addToast, setActivePage }: {
               )}
             </button>
             <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontFamily: 'JetBrains Mono, monospace' }}>
-              Author: {formatAddress(wallet.address!)}
+              Author: {formatAddress(currentAccount.address)}
             </span>
           </div>
         </div>
@@ -682,7 +650,6 @@ function EcosystemPage() {
 export default function Home() {
   const [activePage, setActivePage] = useState('posts');
   const [articleId, setArticleId] = useState<number | null>(null);
-  const wallet = useWallet();
   const { toasts, addToast, removeToast } = useToast();
 
   // Handle hash routing on load
@@ -695,7 +662,7 @@ export default function Home() {
 
   return (
     <div className="page-wrapper">
-      <Navbar activePage={activePage} setActivePage={setActivePage} />
+      <Navbar activePage={activePage} setActivePage={setActivePage} addToast={addToast} />
 
       <main className="main-content" id="main">
         {activePage === 'posts' && (
@@ -709,7 +676,7 @@ export default function Home() {
         )}
         {activePage === 'about' && <AboutPage />}
         {activePage === 'write' && (
-          <WritePage wallet={wallet} addToast={addToast} setActivePage={setActivePage} />
+          <WritePage addToast={addToast} setActivePage={setActivePage} />
         )}
         {activePage === 'ecosystem' && <EcosystemPage />}
       </main>

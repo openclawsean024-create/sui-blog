@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { SuiProviders } from "../components/SuiProvider";
+import "@mysten/dapp-kit/dist/index.css";
 
 export const metadata: Metadata = {
   title: "Sui Blog — Where Web3 Stories Come to Life",
@@ -20,7 +22,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
         <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><path d='M16 4L6 10l10 6 10-6-10-6z' fill='%236F7DFB'/><path d='M6 22l10 6 10-6' stroke='%2300D4FF' stroke-width='2' stroke-linecap='round'/></svg>" type="image/svg+xml" />
       </head>
-      <body>{children}</body>
+      <body>
+        <SuiProviders>{children}</SuiProviders>
+      </body>
     </html>
   );
 }
