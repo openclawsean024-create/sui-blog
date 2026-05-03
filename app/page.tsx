@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Loader2, X, Wallet, ExternalLink, Copy, LogOut, ChevronDown, Menu, Info } from 'lucide-react';
 import { ConnectButton } from '@mysten/dapp-kit';
 import { useCurrentAccount, useDisconnectWallet } from '@mysten/dapp-kit';
-import { posts, getPostById, formatAddress } from '../lib/posts';
+import { posts, getPostById, formatAddress, usePosts } from '../lib/posts';
 import { useToast } from '../hooks/useToast';
 
 // ── Toast Component ──────────────────────────────────────────────────────────
@@ -500,7 +500,9 @@ function WritePage({ addToast, setActivePage }: {
   const [category, setCategory] = useState('Development');
   const [content, setContent] = useState('');
   const [publishing, setPublishing] = useState(false);
+  const [paywallAmount, setPaywallAmount] = useState('');
   const currentAccount = useCurrentAccount();
+  const { addPost } = usePosts();
 
   if (!currentAccount) {
     return (
@@ -523,10 +525,21 @@ function WritePage({ addToast, setActivePage }: {
       return;
     }
     setPublishing(true);
-    await new Promise(res => setTimeout(res, 1500));
+    const excerpt = content.replace(/[#*`\[_\]]/g, '').slice(0, 150) + (content.length > 150 ? '...' : '');
+    const fakeCid = `Qm${Math.random().toString(36).slice(2, 16)}${Math.random().toString(36).slice(2, 6)}`;
+    addPost({
+      title: title.trim(),
+      excerpt,
+      content: content.trim(),
+      category: category as any,
+      date: new Date().toISOString().slice(0, 10),
+      author: currentAccount!.address,
+      paywallAmount: paywallAmount ? parseFloat(paywallAmount) : 0,
+      ipfsCid: fakeCid,
+    });
     setPublishing(false);
-    addToast('success', 'Article published successfully!', 3000);
-    setTitle(''); setCategory('Development'); setContent('');
+    addToast('success', 'Article published! IPFS CID: ' + fakeCid, 5000);
+    setTitle(''); setCategory('Development'); setContent(''); setPaywallAmount('');
     setActivePage('posts');
   }
 
@@ -561,6 +574,19 @@ function WritePage({ addToast, setActivePage }: {
               <option value="Technical">Technical</option>
               <option value="Research">Research</option>
             </select>
+          </div>
+          <div className="form-field">
+            <label className="form-label" htmlFor="paywall">Tip Amount (SUI, optional — 0 = free)</label>
+            <input
+              id="paywall"
+              className="form-input"
+              type="number"
+              min="0"
+              step="0.1"
+              placeholder="0 (free article)"
+              value={paywallAmount}
+              onChange={e => setPaywallAmount(e.target.value)}
+            />
           </div>
           <div className="form-field">
             <label className="form-label" htmlFor="content">Content (Markdown)</label>

@@ -1,3 +1,6 @@
+'use client';
+import { useState, useEffect } from 'react';
+
 export interface Post {
   id: number;
   title: string;
@@ -6,9 +9,15 @@ export interface Post {
   category: 'Development' | 'Ecosystem' | 'Technical' | 'Research';
   date: string;
   author: string;
+  paywallAmount?: number;
+  ipfsCid?: string;
 }
 
-export const posts: Post[] = [
+export function formatAddress(addr: string): string {
+  return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
+}
+
+const STATIC_POSTS: Post[] = [
   {
     id: 1,
     title: "Getting Started with Move Language on Sui",
@@ -322,15 +331,80 @@ Sui uses a **custom metadata standard** compatible with Ethereum's ERC-721 for c
   },
 ];
 
+const STORAGE_KEY = 'sui-blog-posts';
+const MAX_POST_ID_KEY = 'sui-blog-max-id';
+
+// Re-export STATIC_POSTS as `posts` for backward compat with existing components
+export const posts: Post[] = STATIC_POSTS;
+
+// ── localStorage helpers ───────────────────────────────────────────────────
+
+function loadStoredPosts(): Post[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch { return []; }
+}
+
+function saveStoredPosts(stored: Post[]) {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(stored));
+}
+
+export function getMaxPostId(): number {
+  if (typeof window === 'undefined') return 8;
+  return parseInt(localStorage.getItem(MAX_POST_ID_KEY) || '8', 10);
+}
+
+export function setMaxPostId(id: number) {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(MAX_POST_ID_KEY, String(id));
+}
+
+// ── Hook: usePosts ─────────────────────────────────────────────────────────
+
+export function usePosts() {
+  const [userPosts, setUserPosts] = useState<Post[]>([]);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    setUserPosts(loadStoredPosts());
+    setLoaded(true);
+  }, []);
+
+  const allPosts = [...STATIC_POSTS, ...userPosts].sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+  );
+
+  const addPost = (post: Omit<Post, 'id'>) => {
+    const id = getMaxPostId() + 1;
+    setMaxPostId(id);
+    const newPost: Post = { ...post, id };
+    const updated = [newPost, ...userPosts];
+    setUserPosts(updated);
+    saveStoredPosts(updated);
+    return newPost;
+  };
+
+  return { posts: allPosts, userPosts, addPost, loaded };
+}
+
 export function getPostById(id: number): Post | undefined {
-  return posts.find(p => p.id === id);
+  const static_ = STATIC_POSTS.find(p => p.id === id);
+  if (static_) return static_;
+  const stored = loadStoredPosts();
+  return stored.find(p => p.id === id);
+}
+
+export function getPostsByAuthor(address: string): Post[] {
+  const stored = loadStoredPosts();
+  return [...STATIC_POSTS, ...stored].filter(p => p.author.toLowerCase() === address.toLowerCase());
 }
 
 export function getPostsByCategory(category: string): Post[] {
-  if (category === 'All') return posts;
-  return posts.filter(p => p.category === category);
-}
-
-export function formatAddress(addr: string): string {
-  return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
+  const stored = loadStoredPosts();
+  const all = [...STATIC_POSTS, ...stored];
+  if (category === 'All') return all.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  return all.filter(p => p.category === category).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }
