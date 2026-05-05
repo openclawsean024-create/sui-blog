@@ -237,14 +237,19 @@ function CategoryBadge({ category }: { category: string }) {
   return <span className={`post-category-badge ${cls}`}>{category}</span>;
 }
 
-// ── Post Card ───────────────────────────────────────────────────────────────
+// ── Post Card ───────────────────────────────────────────────────────────────────────
 function PostCard({ post, onClick }: { post: any; onClick: () => void }) {
+  function handleClick() {
+    // Update URL hash for shareable/bookmarkable links
+    window.history.pushState(null, '', `#article/${post.id}`);
+    onClick();
+  }
   return (
     <article
       className="post-card"
-      onClick={onClick}
+      onClick={handleClick}
       tabIndex={0}
-      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(); } }}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleClick(); } }}
       role="button"
       aria-label={`Read article: ${post.title}`}
     >
@@ -342,14 +347,14 @@ function renderMarkdown(content: string): string {
     .replace(/<p><\/p>/g, '');
 }
 
-function ArticlePage({ id, setActivePage }: { id: number; setActivePage: (p: string) => void }) {
+function ArticlePage({ id, setActivePage, setArticleId }: { id: number; setActivePage: (p: string) => void; setArticleId: (id: number | null) => void }) {
   const post = getPostById(id);
   if (!post) {
     return (
       <div className="article-page">
         <div className="article-inner" style={{ textAlign: 'center', paddingTop: '80px' }}>
           <h1 style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: '2rem', marginBottom: '1rem' }}>Article not found</h1>
-          <button className="btn-primary" onClick={() => setActivePage('posts')}>← Back to Posts</button>
+          <button className="btn-primary" onClick={() => { window.history.pushState(null, '', '#posts'); setActivePage('posts'); setArticleId(null); }}>← Back to Posts</button>
         </div>
       </div>
     );
@@ -361,7 +366,7 @@ function ArticlePage({ id, setActivePage }: { id: number; setActivePage: (p: str
         <a
           href="#posts"
           className="back-link"
-          onClick={(e) => { e.preventDefault(); setActivePage('posts'); }}
+          onClick={(e) => { e.preventDefault(); window.history.pushState(null, '', '#posts'); setActivePage('posts'); setArticleId(null); }}
         >
           ← Back to Posts
         </a>
@@ -650,15 +655,42 @@ function EcosystemPage() {
 export default function Home() {
   const [activePage, setActivePage] = useState('posts');
   const [articleId, setArticleId] = useState<number | null>(null);
+  const [isHydrated, setIsHydrated] = useState(false);
   const { toasts, addToast, removeToast } = useToast();
 
-  // Handle hash routing on load
+  // Handle hash routing on load (client-side only to avoid SSR mismatch)
   useEffect(() => {
     const hash = window.location.hash.replace('#', '');
-    if (hash && ['posts', 'about', 'write', 'ecosystem'].includes(hash)) {
-      setActivePage(hash);
+    if (hash && ['posts', 'about', 'write', 'ecosystem', 'article'].includes(hash)) {
+      if (hash === 'article') {
+        // Extract article ID from hash like #article/1
+        const match = window.location.hash.match(/\/(\d+)$/);
+        if (match) {
+          setArticleId(Number(match[1]));
+          setActivePage('article');
+        }
+      } else {
+        setActivePage(hash);
+      }
+    } else {
+      setActivePage('posts');
     }
+    setIsHydrated(true);
   }, []);
+
+  // Don't render until hydrated to avoid SSR mismatch
+  if (!isHydrated) {
+    return (
+      <div className="page-wrapper">
+        <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ width: 40, height: 40, border: '3px solid var(--border-subtle)', borderTopColor: 'var(--sui-blue)', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 16px' }} />
+            <span style={{ color: 'var(--text-muted)', fontFamily: 'JetBrains Mono, monospace', fontSize: '0.8rem' }}>Loading...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="page-wrapper">
@@ -672,7 +704,7 @@ export default function Home() {
           </>
         )}
         {activePage === 'article' && articleId && (
-          <ArticlePage id={articleId} setActivePage={setActivePage} />
+          <ArticlePage id={articleId} setActivePage={setActivePage} setArticleId={setArticleId} />
         )}
         {activePage === 'about' && <AboutPage />}
         {activePage === 'write' && (
