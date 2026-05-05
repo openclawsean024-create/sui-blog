@@ -246,14 +246,12 @@ function CategoryBadge({ category }: { category: string }) {
 }
 
 // ── Post Card ───────────────────────────────────────────────────────────────
-function PostCard({ post, onClick }: { post: any; onClick: () => void }) {
+function PostCard({ post, onClick }: { post: any; onClick?: () => void }) {
   return (
-    <article
+    <a
+      href={`/posts/${post.id}`}
       className="post-card"
-      onClick={onClick}
-      tabIndex={0}
-      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(); } }}
-      role="button"
+      onClick={onClick ? (e) => { e.preventDefault(); onClick(); } : undefined}
       aria-label={`Read article: ${post.title}`}
     >
       <div className="post-card-image" aria-hidden="true">
@@ -274,7 +272,7 @@ function PostCard({ post, onClick }: { post: any; onClick: () => void }) {
           <span className="post-meta-author">{formatAddress(post.author)}</span>
         </div>
       </div>
-    </article>
+    </a>
   );
 }
 
@@ -656,16 +654,34 @@ function EcosystemPage() {
 
 // ── Main App ────────────────────────────────────────────────────────────────
 export default function Home() {
-  const [activePage, setActivePage] = useState('posts');
+  const [activePage, setActivePage] = useState(() => {
+    if (typeof window !== 'undefined') {
+        const h = window.location.hash.replace('#', '');
+        if (['posts', 'about', 'write', 'ecosystem', 'article'].includes(h)) return h;
+    }
+    return 'posts';
+  });
   const [articleId, setArticleId] = useState<number | null>(null);
   const { toasts, addToast, removeToast } = useToast();
 
-  // Handle hash routing on load
+  // Handle hash routing on load and hashchange
   useEffect(() => {
-    const hash = window.location.hash.replace('#', '');
-    if (hash && ['posts', 'about', 'write', 'ecosystem'].includes(hash)) {
-      setActivePage(hash);
+    function handleHash() {
+      const hash = window.location.hash.replace('#', '');
+      if (['posts', 'about', 'write', 'ecosystem'].includes(hash)) {
+        setActivePage(hash);
+      } else if (hash.startsWith('article')) {
+        setActivePage('article');
+        const id = parseInt(hash.split('/')[1]);
+        if (!isNaN(id)) setArticleId(id);
+      } else if (!hash) {
+        // bare hash or empty → show posts home
+        setActivePage('posts');
+      }
     }
+    handleHash();
+    window.addEventListener('hashchange', handleHash);
+    return () => window.removeEventListener('hashchange', handleHash);
   }, []);
 
   return (
@@ -673,7 +689,7 @@ export default function Home() {
       <Navbar activePage={activePage} setActivePage={setActivePage} addToast={addToast} />
 
       <main className="main-content" id="main">
-        {activePage === 'posts' && (
+        {(activePage === 'posts' || activePage === '') && (
           <>
             <Hero setActivePage={setActivePage} />
             <PostsPage setActivePage={setActivePage} setArticleId={(id) => { setArticleId(id); setActivePage('article'); }} />
