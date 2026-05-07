@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { posts, formatAddress } from '../lib/posts';
+import { useRouter } from 'next/navigation';
 
 // ── Category Badge ─────────────────────────────────────────────────────────
 function CategoryBadge({ category }: { category: string }) {
@@ -47,11 +48,12 @@ function PostCard({ post, onClick }: { post: any; onClick: () => void }) {
 // ── Posts Page ─────────────────────────────────────────────────────────────
 export default function PostsPage() {
   const [filter, setFilter] = useState('All');
+  const router = useRouter();
   const categories = ['All', 'Development', 'Ecosystem', 'Technical', 'Research'];
   const filtered = filter === 'All' ? posts : posts.filter(p => p.category === filter);
 
   function handlePostClick(postId: number) {
-    window.location.href = `/posts/${postId}`;
+    router.push(`/posts/${postId}`);
   }
 
   return (

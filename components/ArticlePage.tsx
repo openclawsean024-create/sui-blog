@@ -1,4 +1,5 @@
 'use client';
+import { useRouter } from 'next/navigation';
 import { getPostById, formatAddress } from '../lib/posts';
 
 // ── Category Badge ─────────────────────────────────────────────────────────
@@ -36,6 +37,7 @@ function renderMarkdown(content: string): string {
 
 // ── Article Page ───────────────────────────────────────────────────────────
 export default function ArticlePage({ id }: { id: number }) {
+  const router = useRouter();
   const post = getPostById(id);
 
   if (!post) {
@@ -52,12 +54,13 @@ export default function ArticlePage({ id }: { id: number }) {
   return (
     <div className="article-page">
       <div className="article-inner">
-        <a
-          href="/posts"
+        <button
           className="back-link"
+          onClick={() => router.push('/posts')}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '2rem' }}
         >
           ← Back to Posts
-        </a>
+        </button>
 
         <div className="article-header">
           <CategoryBadge category={post.category} />

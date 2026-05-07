@@ -141,8 +141,16 @@ function Navbar({ activePage, setActivePage, addToast }: {
             {links.map(l => (
               <a
                 key={l.id}
-                href={`#${l.id}`}
-                onClick={(e) => { e.preventDefault(); setActivePage(l.id); }}
+                href={l.id === 'write' ? '/write' : `#${l.id}`}
+                onClick={(e) => {
+                  if (l.id === 'write') {
+                    e.preventDefault();
+                    window.location.href = '/write';
+                  } else {
+                    e.preventDefault(); setActivePage(l.id);
+                  }
+                  setMobileOpen(false);
+                }}
                 className={activePage === l.id ? 'active' : ''}
                 aria-current={activePage === l.id ? 'page' : undefined}
               >
@@ -215,9 +223,9 @@ function Hero({ setActivePage }: { setActivePage: (p: string) => void }) {
             Browse Articles
           </a>
           <a
-            href="#write"
+            href="/write"
             className="btn-secondary"
-            onClick={(e) => { e.preventDefault(); setActivePage('write'); }}
+            onClick={(e) => { e.preventDefault(); window.location.href = '/write'; }}
             style={{ padding: '12px 24px', fontSize: '0.95rem', borderRadius: '14px' }}
           >
             Start Writing
