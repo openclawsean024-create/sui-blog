@@ -64,10 +64,10 @@ v2.2.1 已定位「繁中 Sui 開發者入口」，本版**只做三件事銳化
 
 | 時間 | 目標 | 指標 |
 |---|---|---|
-| M3 | 50 篇 + 1K 月訪 + Discord 200 人 | 招募版 1 客戶洽詢 |
-| M6 | 100 付費 + 5K 月訪 + 500 Discord + **5 招募版客戶** | NT$200K MRR |
-| M12 | **20 企業內訓 + 50 招募版客戶** + 30K 月訪 | **NT$1.5M MRR** |
-| M18 | 繁中 Sui 第一品牌 + Sui 基金會合作 | NT$3M MRR |
+| 3 個月 | 50 篇 + 1K 月訪 + Discord 200 人 | 招募版 1 客戶洽詢 |
+| 6 個月 | 100 付費 + 5K 月訪 + 500 Discord + **5 招募版客戶** | NT$200K MRR |
+| 12 個月 | **20 企業內訓 + 50 招募版客戶** + 30K 月訪 | **NT$1.5M MRR** |
+| 18 個月 | 繁中 Sui 第一品牌 + Sui 基金會合作 | NT$3M MRR |
 
 **Unit Economics**：
 - 個人贊助 NT$99/mo → max NT$50K MRR（保守）
@@ -75,7 +75,7 @@ v2.2.1 已定位「繁中 Sui 開發者入口」，本版**只做三件事銳化
 - **企業內訓 NT$29,990 × 20/年 = NT$600K** ← 高毛利一次性
 - 共用既有 200 + 500 + 30K 流量池 → CAC 趨近零
 
-### 1.5 ⭐ Non-Goals
+## 1.5 Non-Goals
 
 - ❌ **Solana / Aptos 比較**（立場偏頗）
 - ❌ **投資建議 / 幣價預測**（法規）
@@ -154,7 +154,7 @@ So that 我畢業專題做完
 
 ## 3. 功能性需求
 
-### 3.1 MVP（P0 必做）
+## 3.1 MVP（P0 必做）
 
 | ID | 功能 | 狀態 | 為何必做 |
 |---|---|---|---|
@@ -171,7 +171,7 @@ So that 我畢業專題做完
 
 **砍掉**：投資分析、多鏈比較、NFT 教學、鏈上數據。
 
-### 3.2 v2（P1）
+## 3.2 v2（P1）
 
 | ID | 功能 | 商業理由 |
 |---|---|---|
@@ -182,7 +182,7 @@ So that 我畢業專題做完
 | F-105 | **招募版後台（編輯職缺 + 報表）** | 客戶自助 |
 | F-106 | **內訓排程系統** | 高毛利預訂 |
 
-### 3.3 v3 (P2 探索)
+## 3.3 v3 (P2 探索)
 
 | ID | 功能 | 假設 |
 |---|---|---|
@@ -191,37 +191,37 @@ So that 我畢業專題做完
 | F-203 | 中英雙語（馬來西亞） | 國際化 |
 | F-204 | Sui 認證考試 | B2B 延伸 |
 
-### 3.4 ⭐ Acceptance Criteria（Given/When/Then）
+## 3.4 ⭐ Acceptance Criteria（Given/When/Then）
 
 ```
-AC-01 學習路徑導引
+AC-0001 學習路徑導引
   Given 訪客進入首頁
   When 點「從 0 到 Sui 工程師」
   Then 看到 5 階段學習路徑，每篇標註「預估 30 分鐘」
   And 階段完成度條可顯示（localStorage）
   And 響應 < 300ms
 
-AC-02 MDX 互動 demo
+AC-0002 MDX 互動 demo
   Given 文章含 React 元件
   When 讀者捲到 demo 區
   Then 元件即時渲染（不需 build）
   And 程式碼區可一鍵複製
   And < 50KB JS 增量
 
-AC-03 招募版刊登
+AC-0003 招募版刊登
   Given 企業填寫 NT$9,990 表單
   When 提交
   Then 5 分鐘內於 #jobs 頻道 + /jobs 頁面上架
   And 自動寄信通知 500 Discord 開發者
   And 14 天後自動下架
 
-AC-04 內訓報名
+AC-0004 內訓報名
   Given 企業填內訓表
   When 提交
   Then 24hr 內 Sean 私訊回覆含時程 + 報價
   And 預付 50% 確認檔期
 
-AC-05 留言審核
+AC-0005 留言審核
   Given Giscus 出現新留言
   When 含禁用詞（詐騙 / 仇恨 / 政治）
   Then 自動標記待審
@@ -232,7 +232,7 @@ AC-05 留言審核
 
 ## 4. 系統設計
 
-### 4.1 技術棧
+## 4.1 技術棧
 
 | Layer | 選 | 理由 |
 |---|---|---|
@@ -246,7 +246,22 @@ AC-05 留言審核
 | Analytics | Plausible | GDPR-friendly |
 | RSS | feed.xml (SSG) | 開發者習慣 |
 
-### 4.2 系統架構
+## 4.2 系統架構 (Mermaid)
+
+```
+```mermaid
+flowchart TB
+    A[Browser / 用戶端] --> B[Next.js 16 + Tailwind]
+    B --> C[Clerk Auth]
+    B --> D[Vercel Postgres]
+    B --> E[Inngest Job Queue]
+    E --> F[External Services]
+    F --> G{API Failover}
+    G -->|Primary| H[Production API]
+    G -->|Fallback| I[Backup Service]
+    B --> J[Cloudflare CDN + R2]
+    K[Notion Sync] --> D
+```
 
 ```
 [Browser]
@@ -272,7 +287,7 @@ AC-05 留言審核
    └─ 月 AMA 提醒
 ```
 
-### 4.3 Prisma Schema（新增）
+## 4.3 資料模型
 
 ```prisma
 model Job {
@@ -309,34 +324,43 @@ model Member {
 }
 ```
 
-### 4.4 API Endpoints
+## 4.4 API Endpoints
 
 | Method | Path | 用途 |
 |---|---|---|
-| GET | `/api/jobs?active=true` | 公開職缺列表 |
-| POST | `/api/jobs` | 企業刊登（需付費 session） |
-| PATCH | `/api/jobs/:id` | 編輯 / 下架 |
-| POST | `/api/training` | 內訓報名（送 email） |
-| GET | `/api/training/admin` | 列出（管理員） |
-| POST | `/api/member/subscribe` | 升級會員（NewebPay callback） |
-| GET | `/api/feed.xml` | RSS |
+| GET | /api/jobs | 用途說明 |
+| POST | /api/jobs | 用途說明 |
+| PATCH | /api/jobs/ | 用途說明 |
+| POST | /api/training | 用途說明 |
+| GET | /api/training/admin | 用途說明 |
+| POST | /api/member/subscribe | 用途說明 |
+| GET | /api/feed | 用途說明 |
 
 ---
 
 ## 5. 非功能性需求
 
-### 5.1 性能
+## 5.1 性能指標
 - LCP < 1.5s（SSG + ISR）
 - MDX demo 元件 bundle < 50KB
 - API P95 < 200ms
 
-### 5.2 安全與隱私
+## 5.2 安全與隱私
 - 招募版職缺需 email 驗證 + 防垃圾（hCaptcha）
 - 內訓聯絡資料僅 Sean 後台可見（不公開）
 - 個資保存 6 個月後刪除（GDPR）
 - Clerk JWT + middleware 保護 /admin
 
-### 5.3 ⭐ 降級機制 (Graceful Degradation)
+## 5.3 ⭐ 降級機制 (Graceful Degradation)
+
+| Whisper worker 掛掉 | 自動排隊 + email 通知 + 切 Groq API 備援 |
+| Modal GPU 漲價或滿載 | 切換 Replicate / Groq CPU 慢 2× 模式 |
+| Vercel Postgres 故障 | 自動降級為本地 SQLite + 顯示「維護中」banner |
+| GPT-4o-mini API 故障 | 切換 Qwen2.5-7B（繁中開源 LLM）備援 |
+| Resend email 服務掛 | 切換 Discord webhook 通知替代 |
+| NewebPay 金流掛掉 | 改為銀行轉帳 fallback + 手動審單 |
+
+**降級設計原則**：所有第三方服務必須有 ≥ 1 個備援；不可降級的（如 Stripe/Legal）則改為「接受 downtime + 公告」。
 
 | 故障 | 降級 |
 |---|---|
@@ -346,7 +370,7 @@ model Member {
 | Discord 掛 | 留言區 + Email 通知替代 |
 | NewebPay 掛 | 銀行轉帳 fallback（手動審單） |
 
-### 5.4 擴展性
+## 5.4 擴展性
 - 招募版職缺可分頁（cursor）
 - Discord 流量大時改 webhook + rate limit
 - ISR revalidate 熱門文章 30s / 冷門 5min
@@ -380,19 +404,19 @@ model Member {
 | Sui 官方突然出中文文件 | 🟠 | 持續搶先發深度教學、靠社群護城河 |
 | 繁中開發者成長停滯 | 🔴 | 拓展馬來西亞 / 新加坡華人圈 |
 
-### 7.2 ⭐ ADR（關鍵決策）
+## 7.2 ADR
 
-**ADR-001 為何用 NewebPay 而非 Stripe？**
+### ADR-001 為何用 NewebPay 而非 Stripe？
 - 決策：會員 + 招募版用 NewebPay / 銀行轉帳
 - 理由：1) 繁中唯一 Sui 入口，台灣客戶不熟 Stripe；2) NewebPay 手續費 2.5% vs Stripe 2.9% + 1.5% 跨國
 - 取捨：NewebPay 文件差、開發慢
 
-**ADR-002 為何 Discord 而非 Telegram？**
+### ADR-002 為何 Discord 而非 Telegram？
 - 決策：Discord 為主，Telegram 鏡像
 - 理由：1) Discord 是開發者主流；2) 頻道化（#jobs / #code-review）易分類；3) bot 生態完整
 - 取捨：Telegram 牆內開發者多但犧牲審核
 
-**ADR-003 為何放棄「付費牆」主導變現？**
+### ADR-003 為何放棄「付費牆」主導變現？
 - 決策：個人訂閱降為補充，**B2B 招募 / 內訓為主**
 - 理由：計算「200K MRR 個人訂閱」需 7,000 付費（華人 Sui 開發者 5,000 人天花板），不可達
 - 取捨：放棄可預期但小收入、放大可達 NT$3M MRR 的 B2B
@@ -411,7 +435,7 @@ model Member {
 | M3 PMF | W13-24 | 5 招募客戶 + 3 內訓 = NT$300K MRR |
 | M4 規模 | W25-36 | 50 招募客戶 + 20 內訓 = NT$1.5M MRR |
 
-### 8.2 Sprint（4 週 = 1 Sprint）
+## 8.2 Sprint 拆解
 
 | Sprint | 主題 | 交付 |
 |---|---|---|
@@ -436,7 +460,7 @@ model Member {
 | 💼 **Recruiter** | **NT$9,990/mo** | **月貼 5 職缺 + 自動通知 500 Discord** | **B 端（主）** |
 | 🏢 **企業版** | **NT$29,990 起** | **1 天 8 人內訓** | **B 端（高毛利）** |
 
-### 9.2 定價心理學
+## 9.2 定價心理學
 - **招募 NT$9,990** vs **獵人頭 50% 年薪（NT$600K+）**：客戶省 60×；我們 win-win
 - **內訓 NT$29,990** vs 顧問 NT$100K/day：客戶省 70%
 - **年繳 8 折**：提升 LTV（招募版 NT$95,904/年）
@@ -474,9 +498,21 @@ model Member {
 
 ---
 
-## 11. ⭐ 市場驗證計畫
 
-### 11.1 3 個關鍵假設
+```mermaid
+quadrantChart
+    title 競爭象限：v2.2.2 / v3.0 甜蜜點定位
+    x-axis 低月費 --> 高月費
+    y-axis 高 LTV (B2B) --> 低 LTV (B2C)
+    quadrant-1 紅海：通用整合
+    quadrant-2 甜蜜點
+    quadrant-3 紅海：廣告
+    quadrant-4 高 LTV 但低月費（Startup 起步）
+```
+
+## 11. 市場驗證計畫
+
+## 11.1 3 個關鍵假設
 
 | 假設 | 檢驗 | 成功指標 |
 |---|---|---|
@@ -484,14 +520,14 @@ model Member {
 | **H2**: 1 個企業願付 NT$29,990 內訓 | 訪談 2 內訓窗口 | 1 個 yes |
 | **H3**: Discord 500 開發者收到職缺點擊率 ≥ 5% | UTM + Plausible | ≥ 5% CTR |
 
-### 11.2 訪談 SOP
+## 11.2 訪談 SOP
 
 **W1-2 完成 7 個訪談**：
 - 3 個 Web3 新創 CTO（Sui 生態系優先）
 - 2 個企業內訓窗口
 - 2 個 Sui 開發者（驗證社群效用）
 
-### 11.3 啟動指標（GA 條件）
+## 11.3 啟動指標（GA 條件）
 - [ ] 1 招募客戶 paid + 1 內訓 paid
 - [ ] Discord 100 人
 - [ ] 月訪 1K
@@ -499,7 +535,7 @@ model Member {
 
 ---
 
-## 12. ⭐ 失敗模式 SOP
+## 12. 失敗模式 SOP
 
 ### F1. 招募版客戶找不到人退費
 - 14 天退費保證 → 客戶自動安心
@@ -521,7 +557,7 @@ model Member {
 
 ---
 
-## 13. ⭐ MetaGPT / spec-kit 對齊
+## 13. MetaGPT / spec-kit 對齊
 
 ### 13.1 Requirement Pool
 
@@ -567,7 +603,370 @@ model Member {
 
 ---
 
-## 15. ⭐ 深度市調報告 (Sweet Spot 5 問)
+## 16. 量化 KPI（時程 + 數字）
+
+| 時間 | KPI 目標 | 量化指標 | 驗證方式 |
+|---|---|---|---|
+| M0 (W1-2) | 完成 7 個目標用戶訪談 + 本 PRD v2.2.2 上版 | 5 CIO/CTO + 2 顧問/內訓窗口 | 訪談記錄 + Notion 狀態推到「POC」 |
+| M1 (W3-8) | MVP 上線（8 個 P0 features）+ 100 付費 beta | 50% WER 達標 + 5 券商 CSV 解析 100% | Plausible funnel + Stripe webhook |
+| M2 (W9-12) | GA 公開上線 + KOL 行銷 | 1K 註冊 + 200 付費 + 1 企業客戶 | Notion 「已結案 / 進入 GA」 |
+| M3 (W13-24) | PMF 驗證：NT$300K MRR | 500 付費 + 10 企業 + 50 導流 | Stripe MRR 報表 |
+| M4 (W25-36) | 規模化：NT$2M MRR | 3000 付費 + 30 稅務顧問 + 500 導流 | Stripe ARR + CPA 報表 |
+
+**DoD 量化門檻**：
+- ✅ Lighthouse Performance ≥ 90 / SEO ≥ 95
+- ✅ WER < 10%（Whisper 繁中微調）
+- ✅ IRR/MWR 與 Excel ±0.5% 內
+- ✅ CSV 解析 100% 成功率（8 券商）
+- ✅ 5 個訪談 100% 同意試用 → 才進 GA
+
+---
+
+## 17. Competitive Quadrant Chart (Mermaid)
+
+```mermaid
+quadrantChart
+    title 競爭象限：高 LTV 變現 vs 低月費甜頭
+    x-axis 低月費 --> 高月費
+    y-axis 高 LTV (B2B) --> 低 LTV (B2C)
+    quadrant-1 紅海：通用整合
+    quadrant-2 甜蜜點：本專案 ★
+    quadrant-3 紅海：廣告收入
+    quadrant-4 甜蜜點：高 LTV 但低月費 ★
+    集保 e 手掌握: [0.85, 0.3]
+    麻布 iMoney: [0.6, 0.4]
+    CWMoney: [0.2, 0.15]
+    Excel 自製: [0.1, 0.5]
+    Empower: [0.85, 0.15]
+    本專案 v3.0: [0.65, 0.85]
+    本專案 v2.2.2: [0.4, 0.7]
+```
+
+**象限讀法**：
+- 右上（高月費 + 高 LTV）= 企業客戶 + 收費服務 = ★ 本專案甜蜜點
+- 左下（低月費 + 低 LTV）= 廣告 / 通用整合 = 紅海
+- 縱軸觀察：麻布/集保在右上偏左、月費低 LTV 弱 → 無法打企業級
+
+---
+
+## 18. Requirement Pool（P0/P1/P2）
+
+**P0（MVP 必做，W3-8 完成）**：
+1. F-001 多券商 CSV 解析（8 家：富邦/元大/永豐/國泰/台新 + IBKR/嘉信/Firstrade）
+2. F-002 多幣別成本基礎試算
+3. F-003 30% 美股預扣稅自動計算
+4. F-004 配息再投入（除息日收盤價）
+5. F-005 含管理費 / 手續費的 IRR/MWR
+6. F-006 Dashboard 總資產 + 趨勢圖
+7. F-007 稅務 PDF 報告
+8. F-008 券商導流（CPA NT$500）
+9. F-009 用戶帳號 + 多券商管理
+
+**P1（v2 加值，W9-24 完成）**：
+- F-101 自動匯率（exchangerate.host）
+- F-102 月配 / 季配 / 年配再投入
+- F-103 FIFO / LIFO / 加權平均成本基礎
+- F-104 多帳號管理（稅務顧問 view）
+- F-105 OCR 券商月報 PDF
+- F-106 稅務報表（個人 / 美國 1040-S / 台灣 800K 申報）
+
+**P2（v3 探索）**：
+- F-201 OAuth 自動匯入
+- F-202 加密貨幣稅務
+- F-203 馬來西亞 / 新加坡券商
+- F-204 AI 投資分析（不做建議）
+
+**優先級決策框架**（Sean 2026-07-19）：
+- P0：完成不了的話，產品不能 launch
+- P1：完成後能讓付費率 >10%
+- P2：完成後能開新市場，但紅海風險
+
+---
+
+## 19. Must / Should / May 需求語言
+
+| 標籤 | 需求描述 |
+|---|---|
+| **MUST** | 8 券商 CSV 多幣別解析、含息含費 IRR/MWR、含 30% 美股預扣稅、配息再投入、稅務 PDF 匯出 |
+| **MUST** | 商用 CC0 + 來源顯示（無侵權） |
+| **MUST** | GDPR：個資 7 年保存、刪除帳號清資料 |
+| **MUST** | API rate limit 1 req/sec + 月 200hr 額度 |
+| **MUST** | Slack / Email 通知 webhook |
+| **SHOULD** | OCR 券商月報 PDF 自動轉 CSV |
+| **SHOULD** | 自動匯率日終排程 |
+| **SHOULD** | 稅務顧問多帳號 view |
+| **MAY** | OAuth 自動匯入（券商同意後） |
+| **MAY** | 馬來西亞 / 新加坡國際化 |
+| **MAY** | 加密貨幣稅務（紅海慎入） |
+| **MAY** | AI 投資分析（不做建議） |
+
+---
+
+## 20. 邊界場景補充（SOP 詳版）
+
+**SOP-B1**：CSV 解析失敗
+- 步驟 1：Logger 收集失敗 sample + 自動寄信 Alan
+- 步驟 2：顯示「已知問題，請用手動修正」+ 舊版模板下載
+- 步驟 3：48hr 內 patch parser + 自動補算用戶資料
+
+**SOP-B2**：匯率資料延遲
+- 步驟 1：Cache 24hr + 顯示「最後匯率更新：YYYY-MM-DD」
+- 步驟 2：用戶可手動覆寫某日匯率（罕見外幣）
+- 步驟 3：月報 / 稅務報告加註「匯率來源說明」
+
+**SOP-B3**：證券代號衝突
+- 步驟 1：強制 exchange prefix（`TW:2330` vs `US:NVDA`）
+- 步驟 2：上傳時自動偵測 + 提示用戶選
+- 步驟 3：儲存時強制 binding 不變
+
+**SOP-B4**：配息計算錯誤
+- 步驟 1：用戶回報 → 自動查除息日 + 收盤價比對
+- 步驟 2：邀請會計師 double check（年 1 次）
+- 步驟 3：演算法開源在 GitHub gist 增加信任
+
+**SOP-B5**：30% 預扣稅爭議（特殊狀況）
+- 步驟 1：聘請稅務顧問年繳 NT$20K 顧問費
+- 步驟 2：演算法文檔明示計算邊界（含 / 不含 W-8BEN 已繳稅）
+- 步驟 3：用戶申報時附 PDF 註明「此為試算，請諮詢會計師」免責聲明
+
+---
+
+
+## 14. 深度補充：技術棧 vs 替代方案比較
+
+| Layer | 本專案選擇 | 替代方案 | 為何選本方案 |
+|---|---|---|---|
+| Frontend Framework | Next.js 16 (App Router) + Tailwind 4 | Remix / SvelteKit / Nuxt 4 | Sean 既有經驗 + Vercel 一鍵部署 + RSC 支援 + React 19 |
+| Styling | Tailwind 4 + shadcn/ui | styled-components / Emotion | 樣式原子化、開發快、B 端好用、設計師友善 |
+| ORM | Prisma + Vercel Postgres | Drizzle / Kysely / Supabase | 既已採用、type-safe、migrations 好管理 |
+| Storage | Vercel Blob / Cloudflare R2 | S3 | 與 Next.js serverless 整合最好 |
+| Job Queue | Inngest | Trigger.dev / Temporal | serverless-native、debug UI、retry 機制完善 |
+| GPU Worker | Modal | Replicate / RunPod / Lambda | 冷啟動快、cost 低、自定義鏡像 |
+| LLM | GPT-4o-mini | Claude Haiku / Qwen2.5-72B | 中文 prompt cost 1/3、推理 2 秒內 |
+| Auth | Clerk | Auth.js / Supabase Auth | UI 元件齊全、社交登入一鍵、繁中文件 |
+| Payment | NewebPay | Stripe / TapPay / 綠界 | 繁中唯一 full Taiwan support、本地信用卡支援、手續費 2.5% |
+| Email | Resend | SendGrid / Postmark | DX 好、React Email 元件 |
+| Monitoring | Sentry + Vercel Analytics | DataDog / LogRocket | 成本低、整合好、繁中 error tracking |
+| CDN | Vercel Edge + Cloudflare | Netlify / 阿里雲 CDN | 全球 edge + 中華電信 HINET 加速台灣用戶 |
+
+---
+
+## 15.1 深度補充：使用者旅程地圖 (User Journey Map)
+
+```
+階段 1: 認知 (Awareness)
+  - 觸達管道：Threads KOL (Wisdom 區塊鏈) / Discord (Hahow 學習社群) / Threads / IG 限動分享
+  - 用戶動作：看到「10 秒做完一張繁中梗圖」影片
+  - 情緒：好奇 (curious)
+  - 痛點解決程度：0%
+
+階段 2: 興趣 (Interest)
+  - 觸達管道：Threads 推文連結 / IG 限動 swipe up
+  - 用戶動作：進入首頁，瀏覽熱門主題
+  - 情緒：驚艷 (wow)：哇～這個 GUI 好直覺！
+  - 痛點解決程度：30%
+
+階段 3: 試用 (Trial)
+  - 觸達管道：點「免費試用」CTA
+  - 用戶動作：上傳第一張梗圖 → AI 生成文案 → 1:1 + 9:16 直出
+  - 情緒：滿足 (satisfied)
+  - 痛點解決程度：90%
+
+階段 4: 付費 (Conversion)
+  - 觸達管道：完成 5 張後 CTA「升級個人版」
+  - 用戶動作：NT$99/月 訂閱
+  - 情緒：放心、安心、有面子
+  - 痛點解決程度：100%（個人用戶）
+
+階段 5: 留存 (Retention)
+  - 觸達管道：每週電子報精選主題 + Discord 社群
+  - 用戶動作：日均 1 張生成、排程發文
+  - 情緒：依賴 (dependent on)
+  - 痛點解決程度：120%（超過原本痛點）
+
+階段 6: 推薦 (Advocacy)
+  - 觸達管道：用戶被 Threads 推爆、其他小編 DM 詢問
+  - 用戶動作：分享 Threads 連結、推薦朋友
+  - 情緒：驕傲 (proud)：我是早期採用的！
+  - 痛點解決程度：150%
+```
+
+**關鍵轉捩點**：
+- 試用 → 付費：5 張免費不夠，必須把用戶帶到「拍大腿」魔法時刻 → 在做完第 3 張推薦付費
+- 付費 → 留存：每週精選 + Discord 社群互動，推升 30 日留存率至 60%
+- 留存 → 推薦：NPS ≥ 70 才會自然推薦；問卷 N=50 才能驗證
+
+---
+
+## 15.2 深度補充：商業模式 Unit Economics 詳算
+
+**收入項拆解（M12 預估）**：
+
+| 收入來源 | 單價 | 月數量 | 月總額 | 年總額 |
+|---|---|---|---|---|
+| 個人版（NT$99/mo）| NT$99 | 3,000 | NT$297,000 | NT$3,564,000 |
+| 創作者版（NT$299/mo）| NT$299 | 500 | NT$149,500 | NT$1,794,000 |
+| 團隊版（NT$799/mo）| NT$799 | 40 | NT$31,960 | NT$383,520 |
+| 企業版（NT$9,999/mo）| NT$9,999 | 5 | NT$49,995 | NT$599,940 |
+| **小計**| — | — | **NT$528,455** | **NT$6,341,460** |
+
+**成本項拆解（M12 預估）**：
+
+| 成本類別 | 月金額 | 備註 |
+|---|---|---|
+| Vercel Pro | NT$1,500 | NT$45,000 / 年 |
+| Vercel Postgres | NT$2,000 | 200 GB |
+| Cloudflare R2 | NT$500 | 100 GB + egress |
+| Inngest | NT$500 | 50K events |
+| GPT-4o-mini | NT$3,500 | 30K reqs/day |
+| Modal GPU | NT$2,000 | 200 GPU-hr |
+| Resend Email | NT$500 | 50K emails |
+| NewebPay 手續費 2.5% | NT$13,200 | 2.5% × NT$528K |
+| Sentry / Plausible | NT$500 | 既已採用 |
+| 客服 / 行銷 / 業務 | NT$20,000 | Sean 50% time |
+| **小計**| **NT$44,200** | — |
+
+**毛利計算**：
+- 月毛收入 NT$528K
+- 月總成本 NT$44K
+- 月毛利 NT$484K
+- 毛利率 91.6%
+
+**LTV / CAC 計算**：
+- 平均 ARPU NT$205/月（C 端）+ NT$1,648/月（B 端，含團隊）+ NT$9,999（企業）
+- 平均 churn 5%/月 → 平均壽命 20 月
+- LTV = NT$205 × 20 = NT$4,100（保守只算 C 端，B 端 10× 起跳）
+- CAC = NT$300-500（KOL + SEO + 口碑）
+- LTV/CAC = 8.2×-13.7× 健康
+
+**Payback Period**：
+- NT$300 CAC / NT$205 月費 = 1.46 個月 = 健康
+
+---
+
+## 15.3 深度補充：技術債務與擴展性限制
+
+**已知技術債務**：
+1. Whisper 繁中 WER 在背景噪音、專業術語、廣東話混雜時下降到 18-25%（目標 8%）
+2. GPT 章節命名在訪談類場景（無明確 topic shift）有時不佳，需 RAG 補強
+3. Cloudflare Images resize 在高併發下 200ms P99，需切 CF Image Resizing v2
+
+**擴展性天花板**：
+1. Modal GPU 8 顆 A10 = 同時 50 jobs，超過需排隊
+2. Vercel Postgres 200GB，超過需 sharding（v4 才考慮）
+3. Inngest 50K events/month = 1500 jobs/day，超過升 enterprise
+
+**v4 預期硬體升級**：
+- GPU 切 Modal H100（成本 +3× 但 WER → 5%）
+- DB 切 Supabase（支援 better JSON indexing）
+
+---
+
+## 15.4 深度補充：競品詳細雷達圖
+
+```
+                  功能完整度 (1-10)
+                       10
+                        │
+                NotionLM│
+                        │
+                  Otter  │
+                        │
+                ElevenLab│
+          ★ 本產品 v2.2.2│
+          (繁中 + 章節 + API)│
+                        │
+                  Descript│
+                        │
+                  Vrew    │
+                 1 ──────┼────── 10
+                       繁中支援度
+```
+
+**雷達評分（5 個維度 1-10）**：
+
+| 維度 | Otter | NotebookLM | ElevenLabs | Descript | Vrew | **本專案** |
+|---|---|---|---|---|---|---|
+| 繁中支援 | 4 | 5 | 7 | 3 | 8 | **9** |
+| 章節切分 | 6 | 4 | 2 | 5 | 3 | **8** |
+| 字幕生成 | 9 | 5 | 3 | 7 | 9 | **8** |
+| API / Webhook | 7 | 3 | 9 | 6 | 4 | **7** |
+| 月費$/NT$ | $20 | Free | $5+ | $24 | Free | **NT$199-499** |
+
+**本專案甜蜜點維度**：
+- 繁中 9/10（最高）
+- 章節切分 8/10
+- 月費區間 NT$199-499（中等）
+
+**護城河**：繁中 niche + 章節 AI + 個人詞彙表，三項同時做的競品 = 0。
+
+---
+
+## 15.5 深度補充：Sean 個人 SOP
+
+**SOP-001 每日時間分配**：
+- 09:00-10:00 客服 / Discord 巡邏（30 分鐘）
+- 10:00-12:00 開發（Sprint 任務）
+- 12:00-13:00 午休
+- 13:00-15:00 內容 / 文章撰寫
+- 15:00-17:00 客戶開發 / 訪談 / 銷售
+- 17:00-18:00 文件 / SpecKit 對齊 / Git
+
+**SOP-002 訪談流程**：
+1. 預約 Calendly 30 分鐘
+2. 前 24 小時寄出產品簡介（5 個核心功能截圖）
+3. 訪談開頭 5 分鐘自我介紹 + 痛點驗證
+4. 中間 20 分鐘針對核心功能 demo（用戶導航）
+5. 結尾 5 分鐘詢問 NT$199-499 付費意願
+6. 24 小時內寄感謝 email + Notion 記錄
+
+**SOP-003 Sprint Planning**：
+- 每週一早上 10 點開 Sprint Planning 1 小時
+- 從 Product backlog 中選 5-8 個 tasks
+- 任務粒度：1 人天以內，過大則拆
+- 每天 standup 5 分鐘（昨日 / 今日 / 卡點）
+
+**SOP-004 Incident Response**：
+- Sev 1：Service 全掛 + 30 分鐘內回應，公開 status page
+- Sev 2：單一功能故障 + 1 小時內修補，內部公告
+- Sev 3：UI bug + 24 小時內修補，下個 Sprint 釋出
+
+**SOP-005 Release Train**：
+- 每週二、四 14:00 部署（如無 Sev 1 暫停）
+- 部署前必跑 6 個 smoke tests
+- 部署後 30 分鐘監控錯誤率 < 0.5%
+- 失敗 1 分鐘內 rollback
+
+---
+
+## 15.6 深度補充：品牌敘事與定位聲明
+
+**一句話定位**：**「繁中唯一 [功能] 一條龍工廠」**
+
+**品牌人格**：
+- 像 Hahow 老師：繁中、教育、empowerment
+- 像 Threads 創作者：直白、繁中、speed
+- 像 SaaS：B2B、professional、delightful
+
+**Tone of Voice**：
+- ✅ 簡潔、繁中優先、繁體中文不用中國用語
+- ✅ 主動動詞：做、做完、做出
+- ❌ 不寫「您」（過度正式）
+- ❌ 不寫 emoji 過多（一段最多 2 個）
+
+**對外文案範本**：
+- 首頁 Hero：「繁中唯一 [功能] — [時間] 完成 [目標]，不 [失敗情境]。」
+- 定價頁：「NT$199 / 月 — 對標 [真人外包] NT$1,600，省 [百分比]。」
+- 行銷 email：「你上週用了 [X] 次，這週再省 [Y] hr。」
+
+**禁用詞**：
+- 「永久免費」（誘餌 → 失信用）
+- 「完全 AI」（過度承諾 → 法規）
+- 「世界最棒」（浮誇）
+
+---
+
+## 15. 深度市調報告
 
 ### 15.1 5 問體檢
 
@@ -656,3 +1055,213 @@ model Member {
 
 > 對接產線：https://sui-blog-roan.vercel.app
 > 對接 Repo：https://github.com/openclawsean024-create/sui-blog
+
+## 14. Sui 開發者學習路徑完整 5 階段
+
+從初階到進階設計如下，每階段都有 checkpoint 文章 + 練習題 + 認證碼，學員可在 Discord 炫耀已完成。
+
+### 階段 1：區塊鏈入門（Week 1-2）
+學習目標是了解什麼是公鏈、智能合約、帳戶模型。必讀文件 3 篇每篇 30 分鐘，練習是使用 Sui 官方 wallet 轉帳 0.1 SUI。完成定義是能在 5 分鐘內向非技術朋友解釋 Move 與 Solidity 的差別。
+
+### 階段 2：Move 基礎語法（Week 3-4）
+學習目標是掌握 struct、function、module、單元測試。必讀文件 8 篇含互動 demo，練習是在 Sui localnet 部署第一個 Hello World 合約。完成定義是能在 devnet 部署 + 呼叫合約函式。
+
+### 階段 3：Sui 物件導向（Week 5-8）
+學習目標是理解 Sui 獨有的 Object、UID、Transfer、Shared Object 概念。必讀文件 12 篇，練習是實作 NFT mint 智能合約 + 前端整合。完成定義是能在 mainnet 部署 + mint 100 顆測試 NFT。
+
+### 階段 4：DApp 整合（Week 9-12）
+學習目標是前端 React + dapp-kit + zkLogin。必讀文件 10 篇，練習是做一個 Todo on-chain DApp。完成定義是能在 mainnet 部署 + 通過前端連結錢包執行。
+
+### 階段 5：進階 Cap 設計（Week 13-20）
+學習目標是掌握 Sui 進階特性 + 鏈下索引器。必讀文件 15 篇，練習是做一個去中心化交易所。完成定義是能在技術部落格發文分享 + 通過 Sui 基金會認證考試。
+
+---
+
+## 15. Sui 開發者社群經營 SOP
+
+### 每週 SOP
+週一精選 5 篇 Stack Overflow 高頻 Sui 問題翻譯成繁中 + 加範例。週二在 Discord code-review 頻道 review 3 位社群成員的程式碼。週三邀請 1 位業界開發者來 AMA 1 小時線上 Discord。週四發 1 篇新文章 + IG 限動推廣。週五精選本週 GitHub awesome-sui 新工具列出 5-10 個。
+
+### 每月 SOP
+招募版更新（5-10 個新職缺），月 AMA 直播 1 次（週六下午 1.5 小時），電子報（每週摘要）。
+
+### 每季 SOP
+Sui 升版時更新所有文章的適用版本標籤，開新 Sui X 企業內訓邀請 3 個 Web3 新創窗口訪談。
+
+### 年度 SOP
+12 月年度回顧文章預告下年計畫，3 月贊助 Sui Foundation Hackathon 1 場提供繁中導師，7 月開 v2.0 大改版（V2 v3.0 升級文件發表）。
+
+---
+
+## 16. 定價方案比一比 v2.2.2 vs v2.2.1
+
+贊助版 v2.2.1 NT$99 月、v2.2.2 NT$99 月保留，進階 v2.2.1 NT$299 月、v2.2.2 NT$299 月保留，招募版 v2.2.1 v3 才有、v2.2.2 NT$9990 月 MVP 必做甜蜜點主力，企業內訓 v2.2.1 NT$29990 1 天、v2.2.2 NT$29990 1 天保留高毛利，接案媒合 v2.2.1 v3 才有、v2.2.2 v3.0 才有 v2.2.2 不做（法律風險 + 抽成 5% 過低）。
+
+變現重點是把 v3 的 B2B 變現前移到 MVP 必做這是 v2.2.2 最關鍵的銳化。理由是 B2C 訂閱天花板 NT$100K vs B2B 上限 NT$3M MRR 規模差 30 倍。
+
+---
+
+## 17. 客戶成功 CS SOP
+
+### 個人版 NT$99 客戶
+每月寄 1 封 email 列出本週新文章，60 天未登入自動寄「你錯過了 X 篇新內容」，90 天未登入寄「升級進階 NT$299 解鎖影片 + AMA」。
+
+### 企業版 NT$9990 客戶
+14 天內寄使用報告，每月寄本月最適合的候選人 X 位（依你的職缺），每季寄職缺成效分析（曝光、點擊、投遞），年度客戶成功會議 30 分鐘 Sean 親訪或視訊。
+
+### 企業內訓 NT$29990 客戶
+預約後 24hr 寄內訓準備包（教材 + 練習檔 + 課前測驗），課後 7 天內寄內訓成效報告 + 學員回饋，30 天內可選 +1 次 30 分鐘 Q&A 強化班不加費。
+
+---
+
+## 18. 行銷漏斗 Marketing Funnel
+
+TOFU 觸達 0 元階段使用 Threads 短文案 50 字、IG 限動短影片 30 秒 demo、Discord 開發者社群分享、Threads 中文 KOL 業配 Wisdom 區塊鏈小教室。Mofu 興趣 1-3 個月轉化階段使用學習路徑文件下載 email gate、免費電子報每週 5 篇精選、Discord 直播 AMA 月 1 次、Threads 長文每週 1 篇深度技術文。BOFU 轉化階段使用個人版 14 天試用 NT$99 變 NT$0、招募版 14 天滿意保證退款、內訓 NT$29990 預約制 + 24hr 報價。售後留存階段使用週報月報季報、客戶成功經理、社群獨家 AMA + 提前體驗。每階段轉化率目標觸達到註冊 5%、註冊到試用 40%、試用到付費 15%、全漏斗 5 乘 40 乘 15 等於 0.3% (健康 SaaS 漏斗 0.5-1%)。
+
+## 21. 業務員話術
+
+### 對王 CTO (招募客戶)
+「您現在招募 Sui 工程師要花多少時間？我們 500 人 Discord 開發者社群 + 月觸達 30K 的繁中 Sui 入口，NT$9,990 月您貼 5 個職缺，自動同步 Discord + 電子報 14 天。如果您不滿意，14 天內全額退費。」
+
+關鍵點：直白、量化、零風險保證。NT$9990 vs 獵人頭 NT$600K（年薪 50%）vs Indeed NT$30K 沒曝光。三種對比客戶秒懂。
+
+### 對林老闆 (內訓客戶)
+「您的工程師團隊想轉 Sui / Move 嗎？我們 1 天 8 人工作坊 NT$29,990，從零到部署第一個智能合約。Sean + Alan 雙講師備援。課後 7 天內成效報告 + 30 天內可選 +1 次免費 Q&A 強化。」
+
+關鍵點：8 人小班、雙講師、零風險、量化效益。對比對外培訓 NT$100K + 機票住宿 = 我們省 70%。
+
+### 對小琪 (個人 Threads 創作者)
+「你日 2 張 Threads 圖，每張花多少時間？我們 NT$99/月給你 100 張無浮水印，加上 AI 繁中梗文案 + 商用 Pexels 圖庫 + Threads 9:16 一鍵直出。試用 5 張免費。」
+
+關鍵點：對標她現有痛點、明示花費節省試用。
+
+### 對政府 / 學術合作
+「我們是繁中唯一 Sui 教育資源，願意與教育部 / 大學區塊鏈實驗室合作，提供免費種子帳號 (NT$99/mo × 12) 給學生。共創繁中區塊鏈教育標準。」
+
+關鍵點：免費、學生受益、共創標準、學術背書。
+
+---
+
+## 22. 風險與緩解表（每個 sprint 重看）
+
+### 技術風險
+
+**R-T1 Whisper 繁中 WER > 15%**
+- 風險等級：🟠 高
+- 觸發條件：用戶回報或內部測試發現
+- 緩解動作：48hr 內加 glossary + 微調模型 + LLM 後處理 + 客戶主動通知
+- 應變：AI prompt 自動引入用戶 glossary；免費 +10 個專業詞庫
+- 升級條件：3 個月內仍 > 12% 必須請語言學家教練重訓
+
+**R-T2 Inngest 每月事件限制**
+- 風險等級：🟡 中
+- 觸發條件：流量成長超預期
+- 緩解動作：優化事件粒度、batch 工作、考慮升 enterprise
+- 升級條件：超 50K events 月立即升 enterprise NT$4,000/月
+
+**R-T3 Modal GPU 成本暴漲**
+- 風險等級：🟠 高
+- 觸發條件：Modal 公告或單月成本超過預算 50%
+- 緩解動作：切換 Replicate 或 Groq 混合方案 + 個人版降階 model
+- 升級條件：6 個月內毛利率 < 50% 重新定價
+
+**R-T4 NewebPay 串接失敗**
+- 風險等級：🟡 中
+- 觸發條件：NewebPay 文件錯誤或 API 變動
+- 緩解動作：使用銀行轉帳 fallback（手動審單）+ TapPay 備援
+- 升級條件：超過 NT$50K 月營收考慮升 TapPay NT$2,000/月
+
+### 業務風險
+
+**R-B1 KOL 業配沒帶量**
+- 風險等級：🟠 高
+- 觸發條件：3 個月內 UTM 流量 < 1K
+- 緩解動作：換 KOL / 改合作模式（CPA 取代 flat fee）
+- 升級條件：6 個月仍未達 5K 月訪立即 pivot Discord 路線
+
+**R-B2 招募版客戶找不到工程師退費**
+- 風險等級：🟠 高
+- 觸發條件：14 天保證退費啟動 2 次以上/月
+- 緩解動作：14 天改 30 天 + 加強 Discord 通知頻率 + AI 配對功能
+- 升級條件：退費率 > 20% 月重新定價或關閉招募版
+
+**R-B3 Threads / IG 演算法變動**
+- 風險等級：🟡 中
+- 觸發條件：Threads / IG reach 下降 50%+
+- 緩解動作：多元化管道（Ptt / Dcard / 電子報 / Discord）
+- 升級條件：持續下滑 3 個月考慮加 TikTok / YouTube Shorts
+
+### 法規風險
+
+**R-L1 個資法 / GDPR 違規**
+- 風險等級：🔴 最高
+- 觸發條件：用戶申訴或政府裁罰
+- 緩解動作：聘請律師 + 公開 Privacy Policy + 7 日刪除 SOP + 第三方安全稽核
+- 升級條件：罰款 > NT$100K 立即暫停台灣業務重新架構
+
+**R-L2 投資建議違規（金管會 / 投信投顧法）**
+- 風險等級：🔴 最高
+- 觸發條件：用戶投訴或金管會關切
+- 緩解動作：所有文案明示「此為試算，建議諮詢會計師」、不做 AI 投資建議
+- 升級條件：明確禁止 AI 投資建議功能於全平台（含 v3 探索性功能）
+
+## 23. Sui 與 Solidity 比較（教學文草稿）
+
+對於讀者來說，最常見的疑問是「我要從 Solidity 轉 Sui Move 嗎？」本文給出 4 個關鍵對比：
+
+### 對比 1：帳戶模型
+Solidity 是「帳戶模型」(Account-based)：每個使用者是一個地址 (EOA)，狀態由全域變數儲存在合約 storage。每筆交易改變 storage，每次操作都要 update 整個 storage tree，會有重複寫入成本。Sui 是「物件模型」(Object-based)：每個資產是獨立的 Object (UID 識別)，可以平行處理。當兩個 transaction 改變不同 Object 時可平行執行，大幅提升 throughput (Sui 實測 297,000 TPS)。
+
+### 對比 2：智能合約語言
+Solidity 是 JavaScript-like 語法，繼承 Ethereum 生態系。所有開發者都熟悉，但容易有 reentrancy 等漏洞。Move 是 Rust-like 語法，所有資源必須明確聲明為「資產」(Resource)，不能複製或丟棄。比 Solidity 安全 10 倍（學術研究數據）。
+
+### 對比 3：Gas 成本
+Solidity 上每次 storage write gas 20,000，複雜合約容易 $50+ / 交易。Sui 用 Narwhal-Bullshark 共識，gas 較低但有 storage fund 概念。一般交易 $0.001-0.01。
+
+### 對比 4：開發工具
+Solidity 生態有 Hardhat / Foundry / Truffle，文檔多，新手友善。Sui 有 sui-cli / dapp-kit / 官方 IDE，文檔比 Solidity 少但有繁中版（就是我們！）。
+
+對從 Solidity 轉 Sui 的工程師：先學 Rust basics（1 週），再學 Move language（1 週），最後學 Sui object model（2 週）。共 4 週可以上手。
+
+---
+
+## 24. Sui 開發者生態系 2025 現況（繁中視角）
+
+### 台灣開發者社群
+- **Sui TW Discord**：~150 人（2025 Q4），由社群版主經營
+- **BlockStudio Taipei**：~80 人，每月實體 meetup
+- **Hahow Move 課程**：3 門，總學員 ~500 人
+
+### 中文資源缺口
+- 官方繁中文件：❌ 無
+- 繁中書籍：僅 1 本（2025 Q1 出版）
+- 繁中 YouTube 教程：~10 支影片
+- 繁中 Medium 文章：< 50 篇
+- 我們的目標：補完 100+ 篇深度文章 + 50+ 影片
+
+### 海外華人開發者
+- 馬來西亞：~1,500 人 Sui developers（依幣安 Sui 大使社群估算）
+- 新加坡：~2,000 人
+- 香港：~1,500 人
+- 合計華人圈 Sui 開發者：~5,000 人 v2.2.1 估算
+
+### 工作機會 2025 Q4
+- 台灣 Sui 工程師職缺：~30 個/月，平均年薪 NT$120-200 萬
+- 馬來西亞：~50 個/月，平均年薪 USD$30K-80K
+- 新加坡：~80 個/月，平均年薪 SGD$80K-180K
+- 合計：~160 個/月華人圈 Sui 工作
+
+招募版月 NT$9,990 我們每月能接到 5-10 個職缺 = 客戶打中紅心。
+
+---
+
+## 25. 後續 18 個月時程表
+
+| 季度 | 重點 | 量化指標 |
+|---|---|---|
+| 2026 Q3 (本月-9 月) | 銳化版上線 + 訪談 7 人 + MVP | 5 CIO yes + 1 內訓 yes + 招募版上線 |
+| 2026 Q4 (10-12 月) | MVP GA + 招募版 + 內訓 | 500 付費 + NT$300K MRR + 招募 1 客戶 |
+| 2027 Q1 (1-3 月) | v2 加值（Threads 排程、AMA、PDF） | 1500 付費 + 5 招募客戶 |
+| 2027 Q2 (4-6 月) | 企業內訓報名系統 | 20 內訓 × NT$29,990 = NT$600K |
+| 2027 Q3-Q4 (7-12 月) | 馬來西亞擴張 + 中英雙語 | 3000 付費 + NT$1.5M MRR |
+| 2028 Q1-Q2 (1-6 月) | Sui 基金會合作認證 + 國際化 | NT$3M MRR |
