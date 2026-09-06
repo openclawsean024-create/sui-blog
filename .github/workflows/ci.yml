@@ -1,0 +1,78 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Lint (ESLint 9)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - name: Install
+        run: npm install --legacy-peer-deps
+      - name: Lint
+        run: npm run lint
+        continue-on-error: false
+
+  typecheck:
+    name: TypeScript typecheck (strict)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - name: Install
+        run: npm install --legacy-peer-deps
+      - name: Typecheck
+        run: npm run typecheck
+
+  test:
+    name: Unit Tests (Vitest)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - name: Install
+        run: npm install --legacy-peer-deps
+      - name: Test
+        run: npm test
+
+  build:
+    name: Build (next build)
+    runs-on: ubuntu-latest
+    needs: [lint, typecheck, test]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - name: Install
+        run: npm install --legacy-peer-deps
+      - name: Build
+        run: npm run build
+
+# 部署由 Vercel 自動接管（push to main → vercel.json 觸發）
+# GHA 不搶 deploy 責任，避免雙 deploy 來源衝突
+# 詳見 PRD/SPEC.md §7 部署契約
